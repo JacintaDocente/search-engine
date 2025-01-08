@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscador de Documentos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Buscador de Documentos</h1>
+  <input type="text" id="searchInput" placeholder="Escribe una palabra clave">
+  <button onclick="search()">Buscar</button>
+  <div id="results"></div>
+
+  <script>
+    const sheetId = '1CygeIKv1e5LwDfuk93OLqR6-O1Huv8NcDg2BGAONFRk'; // Reemplaza con el ID de tu hoja de cálculo
+    const apiKey = 'TU_API_KEY'; // Reemplaza con tu clave de API de Google
+
+    async function search() {
+      const keyword = document.getElementById('searchInput').value.toLowerCase();
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1000?key=${apiKey}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      displayResults(data.values, keyword);
+    }
+
+    function displayResults(data, keyword) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+      
+      if (!data || data.length === 0) {
+        resultsDiv.innerHTML = '<p>No se encontraron resultados.</p>';
+        return;
+      }
+
+      let html = '<table>';
+      html += '<tr>';
+      data[0].forEach(header => html += `<th>${header}</th>`); // Encabezados
+      html += '</tr>';
+
+      data.slice(1).forEach(row => {
+        if (row.join(' ').toLowerCase().includes(keyword)) {
+          html += '<tr>';
+          row.forEach(cell => html += `<td>${cell || ''}</td>`);
+          html += '</tr>';
+        }
+      });
+
+      html += '</table>';
+      resultsDiv.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
