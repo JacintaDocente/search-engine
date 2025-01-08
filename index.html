@@ -21,10 +21,37 @@
       background-color: #f2f2f2;
       text-align: left;
     }
+    a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .button-container {
+      margin-bottom: 20px;
+    }
+    .button-container button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .button-container button:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
   <h1>Buscador de Documentos</h1>
+
+  <div class="button-container">
+    <button onclick="window.open('https://forms.gle/X386RJgcZksgE6rx6', '_blank')">Agregar Documento</button>
+  </div>
+
   <input type="text" id="searchInput" placeholder="Escribe una palabra clave">
   <button onclick="search()">Buscar</button>
   <div id="results"></div>
@@ -83,7 +110,13 @@
         if (cells.join(' ').toLowerCase().includes(keyword)) {
           resultsFound++;
           html += '<tr>';
-          cells.forEach(cell => html += `<td>${cell}</td>`);
+          cells.forEach((cell, index) => {
+            if (headers[index] === 'Link al documento') {
+              html += `<td><a href="${cell}" target="_blank">Ver documento</a></td>`;
+            } else {
+              html += `<td>${cell}</td>`;
+            }
+          });
           html += '</tr>';
         }
       });
@@ -100,4 +133,5 @@
   </script>
 </body>
 </html>
+
 
