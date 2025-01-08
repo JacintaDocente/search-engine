@@ -30,43 +30,78 @@
   <div id="results"></div>
 
   <script>
-    const sheetId = '1CygeIKv1e5LwDfuk93OLqR6-O1Huv8NcDg2BGAONFRk'; // Reemplaza con el ID de tu hoja de cálculo
-    const apiKey = 'TU_API_KEY'; // Reemplaza con tu clave de API de Google
+    const sheetId = '1CygeIKv1e5LwDfuk93OLqR6-O1Huv8NcDg2BGAONFRk'; // Reemplaza con tu Sheet ID
+    const sheetUrl = `https://spreadsheets.google.com/feeds/list/${sheetId}/1/public/values?alt=json`; // URL del feed público
 
     async function search() {
       const keyword = document.getElementById('searchInput').value.toLowerCase();
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z1000?key=${apiKey}`;
+      console.log(`Buscando palabra clave: ${keyword}`); // Verificar entrada del usuario
       
-      const response = await fetch(url);
-      const data = await response.json();
-      displayResults(data.values, keyword);
+      try {
+        const response = await fetch(sheetUrl);
+        console.log('Respuesta del servidor:', response); // Verificar si hay respuesta del servidor
+
+        if (!response.ok) {
+          console.error('Error en la solicitud:', response.status);
+          document.getElementById('results').innerHTML = '<p>Error al obtener los datos.</p>';
+          return;
+        }
+
+        const data = await response.json();
+        console.log('Datos recibidos:', data); // Verificar datos recibidos del servidor
+
+        displayResults(data.feed.entry, keyword);
+      } catch (error) {
+        console.error('Error al realizar la solicitud:', error);
+        document.getElementById('results').innerHTML = '<p>Ocurrió un error. Por favor, inténtalo nuevamente.</p>';
+      }
     }
 
-    function displayResults(data, keyword) {
+    function displayResults(entries, keyword) {
+      console.log('Procesando resultados:', entries); // Verificar entradas recibidas para procesar
+
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '';
-      
-      if (!data || data.length === 0) {
+
+      if (!entries || entries.length === 0) {
+        console.log('No se encontraron entradas en la hoja.');
         resultsDiv.innerHTML = '<p>No se encontraron resultados.</p>';
         return;
       }
 
       let html = '<table>';
       html += '<tr>';
-      data[0].forEach(header => html += `<th>${header}</th>`); // Encabezados
+      Object.keys(entries[0])
+        .filter(key => key.startsWith('gsx$'))
+        .forEach(key => html += `<th>${key.replace('gsx$', '').toUpperCase()}</th>`);
       html += '</tr>';
 
-      data.slice(1).forEach(row => {
-        if (row.join(' ').toLowerCase().includes(keyword)) {
+      let resultsFound = 0;
+
+      entries.forEach(entry => {
+        const values = Object.keys(entry)
+          .filter(key => key.startsWith('gsx$'))
+          .map(key => entry[key].$t);
+
+        if (values.join(' ').toLowerCase().includes(keyword)) {
+          resultsFound++;
           html += '<tr>';
-          row.forEach(cell => html += `<td>${cell || ''}</td>`);
+          values.forEach(value => html += `<td>${value}</td>`);
           html += '</tr>';
         }
       });
 
+      if (resultsFound === 0) {
+        console.log('No se encontraron resultados que coincidan con la palabra clave.');
+        resultsDiv.innerHTML = '<p>No se encontraron resultados que coincidan con tu búsqueda.</p>';
+        return;
+      }
+
       html += '</table>';
       resultsDiv.innerHTML = html;
+      console.log(`Resultados mostrados: ${resultsFound}`);
     }
   </script>
 </body>
 </html>
+
