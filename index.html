@@ -96,22 +96,26 @@
         return;
       }
 
-      // Crear encabezados
+      // Procesar encabezados
+      const headers = Array.from(rows[0].cells).map(cell => cell.textContent.trim());
+      console.log('Encabezados:', headers);
+
       let html = '<table>';
       html += '<tr>';
-      const headers = Array.from(rows[0].cells).map(cell => cell.textContent);
       headers.forEach(header => html += `<th>${header}</th>`);
       html += '</tr>';
 
-      // Filtrar y mostrar resultados
+      // Filtrar y procesar filas
       let resultsFound = 0;
       rows.slice(1).forEach(row => {
-        const cells = Array.from(row.cells).map(cell => cell.textContent);
+        const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
+        console.log('Celdas procesadas:', cells);
+
         if (cells.join(' ').toLowerCase().includes(keyword)) {
           resultsFound++;
           html += '<tr>';
           cells.forEach((cell, index) => {
-            if (headers[index] === 'Link al documento') {
+            if (headers[index].toLowerCase() === 'link al documento') {
               html += `<td><a href="${cell}" target="_blank">Ver documento</a></td>`;
             } else {
               html += `<td>${cell}</td>`;
@@ -133,5 +137,6 @@
   </script>
 </body>
 </html>
+
 
 
