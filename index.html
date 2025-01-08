@@ -66,6 +66,7 @@
       try {
         const response = await fetch(sheetUrl);
         const html = await response.text();
+        console.log('HTML recibido:', html);
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
@@ -79,14 +80,21 @@
         const rows = Array.from(table.rows);
         console.log('Filas procesadas:', rows);
 
-        displayResults(rows, keyword);
+        // Encontrar los encabezados (segunda fila, excluyendo la primera columna)
+        const headers = Array.from(rows[1].cells)
+          .slice(1) // Omitir la primera columna
+          .map(cell => cell.textContent.trim());
+        console.log('Encabezados:', headers);
+
+        // Filtrar y mostrar resultados
+        displayResults(rows.slice(3), headers, keyword); // Empieza en la cuarta fila (datos reales)
       } catch (error) {
         console.error('Error al realizar la solicitud:', error);
         document.getElementById('results').innerHTML = '<p>Ocurrió un error. Por favor, inténtalo nuevamente.</p>';
       }
     }
 
-    function displayResults(rows, keyword) {
+    function displayResults(rows, headers, keyword) {
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '';
 
@@ -95,19 +103,17 @@
         return;
       }
 
-      // Procesar encabezados
-      const headers = Array.from(rows[0].cells).map(cell => cell.textContent.trim());
-      console.log('Encabezados:', headers);
-
       let html = '<table>';
       html += '<tr>';
       headers.forEach(header => html += `<th>${header}</th>`);
       html += '</tr>';
 
-      // Filtrar y procesar filas
       let resultsFound = 0;
-      rows.slice(1).forEach(row => {
-        const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
+
+      rows.forEach(row => {
+        const cells = Array.from(row.cells)
+          .slice(1) // Omitir la primera columna
+          .map(cell => cell.textContent.trim());
         console.log('Celdas procesadas:', cells);
 
         if (cells.join(' ').toLowerCase().includes(keyword)) {
@@ -136,6 +142,3 @@
   </script>
 </body>
 </html>
-
-
-
