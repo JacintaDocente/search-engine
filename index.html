@@ -96,7 +96,7 @@
       }
 
       // Procesar encabezados
-      const headers = Array.from(rows[1].cells).map(cell => cell.textContent.trim());
+      const headers = Array.from(rows[0].cells).map(cell => cell.textContent.trim());
       console.log('Encabezados:', headers);
 
       let html = '<table>';
