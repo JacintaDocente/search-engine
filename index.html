@@ -4,21 +4,44 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jacinta: Documentos para docentes</title>
-  <link rel="stylesheet" href="/style.css"> 
-
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 </head>
 <body>
-  <h1>Buscador de Documentos</h1>
+  <header>
+    <h1>Documentos</h1>
+    <h2>Para docentes</h2>
+  </header>
+  <div class="container">
 
-  <div class="button-container">
-    <button onclick="window.open('https://forms.gle/X386RJgcZksgE6rx6', '_blank')">Agregar Documento</button>
+    <h3>Buscador</h3>
+ 
+    <div class="action-wrapper">
+      <div class="search">
+        <input type="text" id="searchInput" placeholder="Escribe una palabra clave">
+        <button onclick="search()" title="Buscar documento"><span class="material-symbols-outlined">
+          search
+          </span></button>
+      </div>
+
+      <div class="actions">
+        <button onclick="openForm()" title="Subir documento">
+          <span class="material-symbols-outlined">
+          upload_file
+          </span>
+        </button>
+      </div>
+    </div>
+
+
+
+    <div id="results" class="results"></div>
   </div>
-
-  <input type="text" id="searchInput" placeholder="Escribe una palabra clave">
-  <button onclick="search()">Buscar</button>
-  <div id="results"></div>
-
 
   <script src="script.js"></script>
 </body>
 </html>
+

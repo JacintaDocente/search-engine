@@ -80,3 +80,15 @@ function displayResults(rows, headers, keyword) {
   resultsDiv.innerHTML = html;
   console.log(`Resultados mostrados: ${resultsFound}`);
 }
+
+document.getElementById('searchInput').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      search(); // Llama a la función de búsqueda
+    }
+  });
+
+  function openForm() {
+    // Abre el formulario en una nueva pestaña
+    window.open('https://forms.gle/X386RJgcZksgE6rx6', '_blank');
+  }
+  
