@@ -30,6 +30,7 @@ header h1 {
     font-size:60px;
     margin-bottom:0;
     line-height:60px;
+    font-style: italic;
 }
 
 header h1, header h2 {
@@ -38,11 +39,11 @@ header h1, header h2 {
     padding: 5px 10px; 
     margin: 5px 0; 
     color:white;
+    text-align:left;
 }
 
     
-
-h3 {
+h2 {
     text-align: center;
     margin: 30px auto 20px auto;
     font-size:36px;
@@ -111,9 +112,13 @@ input:-webkit-autofill {
   }
 
   .results {
+    overflow-x: auto;
+  }
+
+  .results table {
     background-color: rgba(239, 239, 242, 0.3);
     padding:20px;
-    overflow-y: scroll;
+
   }
 
   td, th {
@@ -167,4 +172,61 @@ input:-webkit-autofill {
 
 small {
     font-size:10px;
+}
+
+footer {
+    padding: 10px;
+    background-color: gainsboro;
+    color:slategray;
+    font-size: 12px;
+    text-align: right;
+}
+
+footer .material-symbols-outlined {
+    font-size: 12px;
+    vertical-align: middle;
+    color:slategray;
+}
+
+.sections {
+    margin-top:40px;
+    display:flex;
+    margin-bottom:40px;
+    padding:40px 0;
+}
+
+.sections section {
+    text-align: center;
+    padding:40px 22px;
+    flex: 1;    
+}
+
+
+.sections section:nth-child(odd) {
+    background-color: rgb(237, 185, 128, 0.8);
+}
+
+.sections section:nth-child(even) {
+    background-color: rgb(237, 185, 128);
+}
+
+
+.sections section h3 {
+    font-size: 1.1em;
+    font-weight:400;
+    margin-bottom:20px;
+}
+
+
+.sections section  img{
+    width:150px;
+    border-radius: 20px;
+    margin-bottom:24px;
+    box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+}
+
+
+.sections section p {
+    font-size: 12px;
+    font-weight: 300;
 }

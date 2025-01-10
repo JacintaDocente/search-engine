@@ -166,41 +166,6 @@ function transformJsonToTable(json, columnsToInclude) {
   }
   
 
-// async function search() {
-//   const keyword = document.getElementById('searchInput').value.toLowerCase();
-//   console.log(`Buscando palabra clave: ${keyword}`);
-
-//   try {
-//     const response = await fetch(sheetUrl);
-//     const html = await response.text();
-//     console.log('HTML recibido:', html);
-
-//     const parser = new DOMParser();
-//     const doc = parser.parseFromString(html, 'text/html');
-//     const table = doc.querySelector('table');
-//     if (!table) {
-//       console.error('No se encontró la tabla en el HTML.');
-//       document.getElementById('results').innerHTML = '<p>Error al procesar la hoja de cálculo.</p>';
-//       return;
-//     }
-
-//     const rows = Array.from(table.rows);
-//     console.log('Filas procesadas:', rows);
-
-//     // Encontrar los encabezados (segunda fila, excluyendo la primera columna)
-//     const headers = Array.from(rows[1].cells)
-//       .slice(1) // Omitir la primera columna
-//       .map(cell => cell.textContent.trim());
-//     console.log('Encabezados:', headers);
-
-//     // Filtrar y mostrar resultados
-//     displayResults(rows.slice(3), headers, keyword); // Empieza en la cuarta fila (datos reales)
-//   } catch (error) {
-//     console.error('Error al realizar la solicitud:', error);
-//     document.getElementById('results').innerHTML = '<p>Ocurrió un error. Por favor, inténtalo nuevamente.</p>';
-//   }
-// }
-
 function displayResults(rows, headers, keyword) {
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '';
@@ -301,3 +266,5 @@ document.getElementById('searchInput').addEventListener('keydown', (event) => {
     window.open('https://forms.gle/X386RJgcZksgE6rx6', '_blank');
   }
   
+
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
