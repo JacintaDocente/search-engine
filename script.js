@@ -1,6 +1,7 @@
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVyINoIo2LqaAAd8WdVhDRsSev_bu9RxuCoMznsjMd0oZ-AMCNgZ8b-7_bXPyOSVqT0lQU8qpZT6z2/pubhtml';
 
 async function search() {
+    clearResults();
     const keyword = document.getElementById('searchInput').value.toLowerCase();
     console.log(`Buscando palabra clave: ${keyword}`);
   
@@ -18,11 +19,13 @@ async function search() {
       }
   
       const jsonResult = transformSheetToJson(table);
-      console.log('JSON Resultante:', jsonResult);
+      console.log('JSON total:', jsonResult);
+      const filtredJson = filterJsonByKeyword(jsonResult, keyword)
+
+      console.log('JSON Filtrado:', filtredJson);
   
       // Mostrar la tabla en la página web
-      transformJsonToTable(jsonResult, [0,1, 2, 3, 4, 5, 6, 7]); // Aquí defines las columnas a mostrar
-      return jsonResult;
+      transformJsonToTable(filtredJson, [0,1, 2, 3, 4, 5, 6, 7]); // Aquí defines las columnas a mostrar
     } catch (error) {
       console.error('Error al realizar la solicitud:', error);
       document.getElementById('results').innerHTML = '<p>Ocurrió un error. Por favor, inténtalo nuevamente.</p>';
@@ -163,7 +166,7 @@ function transformJsonToTable(json, columnsToInclude) {
             `;
           }
           
-  }
+}
   
 
 function displayResults(rows, headers, keyword) {
@@ -255,16 +258,43 @@ function displayResults(rows, headers, keyword) {
     console.log(`Resultados mostrados: ${resultsFound}`);
   }
 
+  function filterJsonByKeyword(json, keyword) {
+    const { table, tableInfo } = json;
+  
+    // Filtrar las filas que contienen la palabra clave (insensible a mayúsculas)
+    const filteredData = table.filter(row =>
+      row.some(cell => cell.toLowerCase().includes(keyword))
+    );
+  
+    // Retornar el JSON filtrado manteniendo los encabezados originales
+    return {
+      table: filteredData,
+      tableInfo: {
+        headers: tableInfo.headers,
+        totalRecords: filteredData.length
+      }
+    };
+  }
+  
+
+  function clearResults() {
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv) {
+      resultsDiv.innerHTML = ''; // Limpia el contenido del contenedor
+    }
+    console.log('Resultados limpiados.');
+  }
+
 document.getElementById('searchInput').addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       search(); // Llama a la función de búsqueda
     }
   });
 
-  function openForm() {
-    // Abre el formulario en una nueva pestaña
-    window.open('https://forms.gle/X386RJgcZksgE6rx6', '_blank');
-  }
+function openForm() {
+// Abre el formulario en una nueva pestaña
+window.open('https://forms.gle/X386RJgcZksgE6rx6', '_blank');
+}
   
 
   document.getElementById('currentYear').textContent = new Date().getFullYear();
