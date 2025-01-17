@@ -13,29 +13,44 @@
 <body>
   <header>
     <h1>Jacinta</h1>
-    <h2>Comunidad de documentos para docentes</h2>
+    <h2>Comunidad de documentos para docentes de</h2>
   </header>
   <div class="container">
 
     <h2>Buscador</h2>
  
+    <div class="filters">
+      <!-- Filtro de Material (Checkbox dinámico) -->
+      <div id="materiaFilter">
+        <h4>Material:</h4>
+        <!-- Aquí se insertarán los checkboxes dinámicamente -->
+      </div>
+    
+      <!-- Filtro de Tipo (Select dinámico) -->
+      <div id="typeFilter">
+        <h4>Tipo:</h4>
+        <select id="typeSelect">
+          <option value="">Todos</option>
+          <!-- Aquí se insertarán las opciones dinámicamente -->
+        </select>
+      </div>
+    </div>
+    
     <div class="action-wrapper">
       <div class="search">
-        <input type="text" id="searchInput" placeholder="Escribe un termino... ">
-        <button onclick="search(1,2,3,5,6,7,8)" title="Buscar documento"><span class="material-symbols-outlined">
-          search
-          </span></button>
+        <input type="text" id="searchInput" placeholder="Escribe un término...">      
+        <button onclick="search(1,2,3,5,6,7,8)" title="Buscar documento">
+          <span class="material-symbols-outlined">search</span>
+        </button>
       </div>
-
+    
       <div class="actions">
         <button onclick="openForm()" title="Subir documento">
-          <span class="material-symbols-outlined">
-          upload_file
-          </span>
+          <span class="material-symbols-outlined">upload_file</span>
         </button>
       </div>
     </div>
-
+    
 
 
     <div id="results" class="results"></div>
