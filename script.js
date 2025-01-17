@@ -12,63 +12,48 @@ async function getFiltersOptions() {
   try {
     const jsonData = await fetchSheetAsJson();
 
+    // 🔎 Obtener valores únicos de la columna 3 (Materia)
+    const materiaOptions = [...new Set(
+      jsonData.table
+        .map(row => row[3]) // Columna 3
+        .filter(Boolean)
+        .flatMap(value => value.split(',').map(item => item.trim())) // Separar por comas
+    )];
+
     // 🔎 Obtener valores únicos de la columna 8 (Tipo)
     const typeOptions = [...new Set(jsonData.table.map(row => row[8]).filter(Boolean))];
 
-    // 🔎 Obtener y separar términos únicos de la columna 3(Materia separada por comas)
-    const materiaOptions = [...new Set(
-      jsonData.table
-        .map(row => row[3])  // Extraer columna 3 (Materia)
-        .filter(Boolean)     // Eliminar vacíos
-        .flatMap(value => value.split(',').map(item => item.trim())) // Separar por comas y limpiar espacios
-    )];
+    // 🎯 Generar checkboxes para Materia
+    const materiaFilterDiv = document.getElementById('materiaFilter');
+    materiaFilterDiv.innerHTML = '';  // Limpiar contenido previo
 
-    // 🎯 Generar <select> para Tipo (índice 8)
+    materiaOptions.forEach(option => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.name = 'materiaFilter';
+      checkbox.value = option;
+      checkbox.id = `materia-${option}`;
+
+      const label = document.createElement('label');
+      label.htmlFor = `materia-${option}`;
+      label.textContent = option;
+
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(label);
+
+      materiaFilterDiv.appendChild(wrapper);
+    });
+
+    // 🎯 Generar <select> para Tipo
     const typeSelect = document.getElementById('typeSelect');
-    typeSelect.innerHTML = '<option value="">Todos</option>';  // Opción por defecto
+    typeSelect.innerHTML = '<option value="">Todos</option>';
 
     typeOptions.forEach(option => {
       const selectOption = document.createElement('option');
       selectOption.value = option;
       selectOption.textContent = option;
       typeSelect.appendChild(selectOption);
-    });
-
-    // 🎯 Generar radios para Materia (índice 4)
-    const materiaFilterDiv = document.getElementById('materiaFilter');
-    materiaFilterDiv.innerHTML = '';  // Limpiar contenido previo
-
-    // Radio "Todos"
-    const allRadio = document.createElement('input');
-    allRadio.type = 'radio';
-    allRadio.name = 'materiaFilter';
-    allRadio.value = '';
-    allRadio.id = 'materia-all';
-    allRadio.checked = true;
-
-    const allLabel = document.createElement('label');
-    allLabel.htmlFor = 'materia-all';
-    allLabel.textContent = 'Todos';
-
-    materiaFilterDiv.appendChild(allRadio);
-    materiaFilterDiv.appendChild(allLabel);
-    materiaFilterDiv.appendChild(document.createElement('br'));
-
-    // Radios dinámicos para Materia
-    materiaOptions.forEach(option => {
-      const radio = document.createElement('input');
-      radio.type = 'radio';
-      radio.name = 'materiaFilter';
-      radio.value = option;
-      radio.id = `materia-${option}`;
-
-      const label = document.createElement('label');
-      label.htmlFor = `materia-${option}`;
-      label.textContent = option;
-
-      materiaFilterDiv.appendChild(radio);
-      materiaFilterDiv.appendChild(label);
-      materiaFilterDiv.appendChild(document.createElement('br'));
     });
 
   } catch (error) {
@@ -171,8 +156,70 @@ async function search(...searchIndexes) {
 
   clearResults();
 
+  // ✅ Función Global para generar la tabla
+function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
+  const { table, tableInfo } = jsonData;
+  const headers = tableInfo.headers;
+
+  // Reordenar los encabezados
+  const orderedHeaders = columnsToIncludeInOrder.map(index => headers[index]);
+
+  // Reordenar los datos según columnsToIncludeInOrder
+  const orderedData = table.map(row =>
+    columnsToIncludeInOrder.map(index => row[index])
+  );
+
+  // Construir la tabla HTML
+  let html = '<table><thead><tr>';
+
+  // Encabezados con inputs para filtrar
+  orderedHeaders.forEach((header, colIndex) => {
+    html += `<th>
+               ${header}<br>
+               <input type="text" onkeyup="filterColumn(${colIndex})" placeholder="Filtrar...">
+             </th>`;
+  });
+
+  html += '</tr></thead><tbody id="tableBody">';
+
+  // Filas de datos
+  orderedData.forEach(row => {
+    html += '<tr>';
+    row.forEach(cell => {
+      html += `<td>${cell}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+
+  // Mostrar la tabla en el contenedor #results
+  document.getElementById('results').innerHTML = html;
+
+  // 🔍 Función para filtrar datos por columna
+  window.filterColumn = function (colIndex) {
+    const input = document.querySelectorAll('thead input')[colIndex];
+    const filter = input.value.toLowerCase();
+    const rows = document.querySelectorAll('#tableBody tr');
+
+    rows.forEach(row => {
+      const cell = row.cells[colIndex];
+      if (cell) {
+        const cellText = cell.textContent.toLowerCase();
+        row.style.display = cellText.includes(filter) ? '' : 'none';
+      }
+    });
+  };
+}
+
+
   const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-  const materiaSelected = document.querySelector('input[name="materiaFilter"]:checked')?.value.toLowerCase() || '';
+
+  // 🔎 Obtener todas las materias seleccionadas
+  const materiaSelected = Array.from(document.querySelectorAll('input[name="materiaFilter"]:checked'))
+    .map(checkbox => checkbox.value.toLowerCase());
+
+  // 🔎 Obtener el filtro seleccionado en Tipo (index 8)
   const tipoSelected = document.getElementById('typeSelect')?.value.toLowerCase() || '';
 
   try {
@@ -185,13 +232,18 @@ async function search(...searchIndexes) {
 
     const filteredData = {
       table: jsonData.table.filter(row => {
-        const materiaMatch = materiaSelected
-          ? row[3].toLowerCase().split(',').map(item => item.trim()).includes(materiaSelected)
+        // ✅ Filtrar por múltiples Materias (index 3)
+        const materiaMatch = materiaSelected.length > 0
+          ? materiaSelected.some(selectedMateria =>
+              row[3].toLowerCase().split(',').map(item => item.trim()).includes(selectedMateria)
+            )
           : true;
 
+        // ✅ Filtrar por Tipo (index 8)
         const tipoMatch = tipoSelected ? row[8].toLowerCase() === tipoSelected : true;
 
-        const searchInIndexes = (materiaSelected || tipoSelected) ? [1, 2, 3, 5, 6, 7, 8] : searchIndexes;
+        // ✅ Filtrar por palabra clave
+        const searchInIndexes = (materiaSelected.length || tipoSelected) ? [1, 2, 3, 5, 6, 7, 8] : searchIndexes;
 
         const keywordMatch = keyword
           ? searchInIndexes.some(index => (row[index] || '').toLowerCase().includes(keyword))
@@ -214,54 +266,6 @@ async function search(...searchIndexes) {
   } catch (error) {
     console.error('Error al realizar la búsqueda:', error);
     document.getElementById('results').innerHTML = '<p>Hubo un error al cargar los datos.</p>';
-  }
-
-  // Definir transformJsonToTable DENTRO de search
-  function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
-    const { table, tableInfo } = jsonData;
-    const headers = tableInfo.headers;
-
-    const orderedHeaders = columnsToIncludeInOrder.map(index => headers[index]);
-    let orderedData = table.map(row =>
-      columnsToIncludeInOrder.map(index => row[index])
-    );
-
-    let html = '<table><thead><tr>';
-
-    orderedHeaders.forEach((header, colIndex) => {
-      html += `<th>
-                 ${header}<br>
-                 <input type="text" onkeyup="filterColumn(${colIndex})" placeholder="Filtrar...">
-               </th>`;
-    });
-
-    html += '</tr></thead><tbody id="tableBody">';
-
-    orderedData.forEach(row => {
-      html += '<tr>';
-      row.forEach(cell => {
-        html += `<td>${cell}</td>`;
-      });
-      html += '</tr>';
-    });
-
-    html += '</tbody></table>';
-
-    document.getElementById('results').innerHTML = html;
-
-    window.filterColumn = function (colIndex) {
-      const input = document.querySelectorAll('thead input')[colIndex];
-      const filter = input.value.toLowerCase();
-      const rows = document.querySelectorAll('#tableBody tr');
-
-      rows.forEach(row => {
-        const cell = row.cells[colIndex];
-        if (cell) {
-          const cellText = cell.textContent.toLowerCase();
-          row.style.display = cellText.includes(filter) ? '' : 'none';
-        }
-      });
-    };
   }
 }
 
