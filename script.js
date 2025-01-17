@@ -105,23 +105,26 @@ async function search(...searchIndexes) {
     const { table, tableInfo } = jsonData;
     const headers = tableInfo.headers;
   
-    // 🔄 Reorganizar los encabezados según columnsToIncludeInOrder
+    // Reorganizar los encabezados según columnsToIncludeInOrder
     const orderedHeaders = columnsToIncludeInOrder.map(index => headers[index]);
   
-    // 🔄 Reorganizar los datos según columnsToIncludeInOrder
-    const orderedData = table.map(row =>
+    // Reorganizar los datos según columnsToIncludeInOrder
+    let orderedData = table.map(row =>
       columnsToIncludeInOrder.map(index => row[index])
     );
   
-    // 🏗️ Construir la tabla HTML
+    // 🏗️ Construir la tabla HTML con inputs de filtro
     let html = '<table><thead><tr>';
   
-    // Encabezados de la tabla
-    orderedHeaders.forEach(header => {
-      html += `<th>${header}</th>`;
+    // Encabezados con inputs para filtrar
+    orderedHeaders.forEach((header, colIndex) => {
+      html += `<th>
+                 ${header}<br>
+                 <input type="text" onkeyup="filterColumn(${colIndex})" placeholder="Filtrar...">
+               </th>`;
     });
   
-    html += '</tr></thead><tbody>';
+    html += '</tr></thead><tbody id="tableBody">';
   
     // Filas de datos
     orderedData.forEach(row => {
@@ -136,7 +139,23 @@ async function search(...searchIndexes) {
   
     // Mostrar la tabla en el contenedor #results
     document.getElementById('results').innerHTML = html;
+  
+    // 🔍 Función para filtrar datos por columna
+    window.filterColumn = function (colIndex) {
+      const input = document.querySelectorAll('thead input')[colIndex];
+      const filter = input.value.toLowerCase();
+      const rows = document.querySelectorAll('#tableBody tr');
+  
+      rows.forEach(row => {
+        const cell = row.cells[colIndex];
+        if (cell) {
+          const cellText = cell.textContent.toLowerCase();
+          row.style.display = cellText.includes(filter) ? '' : 'none';
+        }
+      });
+    };
   }
+  
   
 
   // Obtener el término de búsqueda
