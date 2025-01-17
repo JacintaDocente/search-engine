@@ -118,7 +118,7 @@ input:-webkit-autofill {
   .results table {
     background-color: rgba(239, 239, 242, 0.3);
     padding:20px;
-
+    width:100%;
   }
 
   td, th {
