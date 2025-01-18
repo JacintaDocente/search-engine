@@ -22,11 +22,14 @@
 
     
     <div class="action-wrapper">
+      <button type="button" id="shareButton" title="Compartir búsqueda">
+        <span class="material-symbols-outlined">share</span>
+      </button>
+
       <div class="search">
         <div class="filters">
           <!-- Filtro de Material (Checkbox dinámico) -->
           <div id="materiaFilter" class="segmented-control">
-            <h4>Material:</h4>
             <!-- Aquí se insertarán los checkboxes dinámicamente -->
           </div>
         
@@ -40,18 +43,26 @@
         </div>
 
         <div class="searchbar">
-          <input type="text" id="searchInput" placeholder="Escribe un término o pulsa la lupita para buscar todos...">      
-          <button type="button" title="Buscar documento">
+          <input type="text" id="searchInput" placeholder="Escribe un término o pulsa la lupita para buscar todos...">
+          
+          <!-- ❌ Botón de limpiar -->
+          <button type="button" id="clearButton" title="Limpiar búsqueda" style="display: none;">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+
+          <!-- 🔍 Botón de búsqueda -->
+          <button type="button" id="searchButton" title="Buscar documento">
             <span class="material-symbols-outlined">search</span>
           </button>
-        </div>
+        
 
+        </div>      
       </div>
     
       <div class="actions">
         <button onclick="openForm()" title="Subir documento">
           <span class="material-symbols-outlined">upload_file</span>
-          SUBIR DOCUMENTO
+          <p>SUBIR DOCUMENTO</p>
         </button>
       </div>
     </div>

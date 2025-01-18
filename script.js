@@ -33,9 +33,13 @@ async function getFiltersOptions() {
         .flatMap(value => value.split(',').map(item => item.trim()))
     )];
 
+    // 📝 Leer los parámetros de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedMaterias = (urlParams.get('3') || '').split(',').map(item => item.trim().toLowerCase());
+    const selectedTipo = (urlParams.get('8') || '').toLowerCase();
+
     // 🎯 Generar checkboxes para Materia con estilo segmented
     const materiaFilterDiv = document.getElementById('materiaFilter');
-    materiaFilterDiv.innerHTML = '';
 
     const segmentedWrapper = document.createElement('div');
     segmentedWrapper.classList.add('segmented-control');
@@ -46,6 +50,11 @@ async function getFiltersOptions() {
       checkbox.name = 'materiaFilter';
       checkbox.value = option;
       checkbox.id = `materia-${option}`;
+
+      // ✅ Marcar como seleccionado si está en los parámetros de la URL
+      if (selectedMaterias.includes(option.toLowerCase())) {
+        checkbox.checked = true;
+      }
 
       const label = document.createElement('label');
       label.htmlFor = `materia-${option}`;
@@ -78,6 +87,12 @@ async function getFiltersOptions() {
       const selectOption = document.createElement('option');
       selectOption.value = option;
       selectOption.textContent = option;
+
+      // ✅ Marcar como seleccionado si está en los parámetros de la URL
+      if (option.toLowerCase() === selectedTipo) {
+        selectOption.selected = true;
+      }
+
       typeSelect.appendChild(selectOption);
     });
 
@@ -88,6 +103,7 @@ async function getFiltersOptions() {
     console.error('Error al generar los filtros:', error);
   }
 }
+
 
 // Función principal para obtener y convertir los datos
 async function fetchSheetAsJson() {
@@ -364,8 +380,6 @@ function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
   };
 }
 
-
-
 function clearResults() {
   const resultsDiv = document.getElementById('results');
   resultsDiv.innerHTML = '';  // Limpia el contenido previo
@@ -380,6 +394,104 @@ function syncScrollbars() {
   bottomScroll.onscroll = () => topScroll.scrollLeft = bottomScroll.scrollLeft;
 }
 
+// 🧹 Limpia los resultados y el campo de búsqueda
+function clearResultsAndInput() {
+  document.getElementById('searchInput').value = '';  // Limpia el input de búsqueda
+  clearResults();  // Limpia los resultados
+}
+
+// ✅ Inicializar el botón de limpiar búsqueda
+function initializeClearButton() {
+  const searchInput = document.getElementById('searchInput');
+  const clearButton = document.getElementById('clearButton');
+
+  if (!searchInput || !clearButton) {
+    console.warn('🔍 searchInput o clearButton no encontrados en el DOM.');
+    return;
+  }
+
+  // 🔍 Mostrar u ocultar el botón al escribir en el input
+  searchInput.addEventListener('input', function () {
+    toggleClearButton();
+  });
+
+  // ❌ Limpiar el input al hacer clic en el botón
+  clearButton.addEventListener('click', function () {
+    searchInput.value = '';             // Limpiar input
+    toggleClearButton();                // Ocultar botón
+    clearResults();                     // Limpiar resultados
+  });
+
+  // 📌 Mostrar el botón si hay parámetro 'keyword' en la URL
+  toggleClearButton();
+}
+
+// 🔄 Mostrar u ocultar el botón de limpiar según el estado del input o la URL
+function toggleClearButton() {
+  const searchInput = document.getElementById('searchInput');
+  const clearButton = document.getElementById('clearButton');
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasKeyword = urlParams.get('keyword');
+
+  if (searchInput.value.trim() || hasKeyword) {
+    clearButton.style.display = 'inline-block';
+  } else {
+    clearButton.style.display = 'none';
+  }
+}
+
+
+// 🔗 Función para abrir el formulario en una nueva pestaña
+function openForm() {
+  const formUrl = 'https://forms.gle/qFUDpgGMCKNJygtd7';  // ⬅️ Reemplazar con el URL del formulario
+  window.open(formUrl, '_blank');  // Abre el formulario en una nueva pestaña
+}
+
+// ✅ Inicializar el botón de compartir
+function initializeShareButton() {
+  const shareButton = document.getElementById('shareButton');
+
+  if (!shareButton) {
+    console.warn('🔗 shareButton no encontrado en el DOM.');
+    return;
+  }
+
+  // 🔄 Mostrar u ocultar el botón según los parámetros de la URL
+  toggleShareButton();
+
+  // 📋 Copiar la URL al hacer clic en el botón
+  shareButton.addEventListener('click', function () {
+    const url = window.location.href;
+
+    // 📋 Copiar la URL al portapapeles
+    navigator.clipboard.writeText(url).then(() => {
+      // ✅ Confirmación visual (puedes personalizar este mensaje)
+      alert('🔗 ¡URL copiada al portapapeles!');
+    }).catch(err => {
+      console.error('❌ Error al copiar la URL:', err);
+      alert('⚠️ Ocurrió un error al copiar la URL.');
+    });
+  });
+}
+
+// 🔄 Mostrar u ocultar el botón de compartir según la URL
+function toggleShareButton() {
+  const shareButton = document.getElementById('shareButton');
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasKeyword = urlParams.get('keyword');
+
+  // 🔎 Mostrar solo si hay 'keyword' en la URL
+  if (hasKeyword && hasKeyword.trim() !== '') {
+    shareButton.style.display = 'inline-block';
+  } else {
+    shareButton.style.display = 'none';
+  }
+}
+
+// 🟢 Llamar la función al cargar la página
+document.addEventListener('DOMContentLoaded', initializeShareButton);
+
+
 // 🔎 Ejecutar búsqueda al presionar Enter en el input de búsqueda
 document.getElementById('searchInput').addEventListener('keydown', function(event) {
   if (event.key === 'Enter') {
@@ -387,9 +499,17 @@ document.getElementById('searchInput').addEventListener('keydown', function(even
   }
 });
 
-// 🔎 Ejecutar búsqueda al hacer clic en el botón de búsqueda
-document.querySelector('.searchbar button').addEventListener('click', function() {
-  search(...searchableColumns);  // Ejecuta la búsqueda
+// 🔎 Ejecutar búsqueda solo al hacer clic en el botón de búsqueda
+document.getElementById('searchButton').addEventListener('click', function() {
+  search();  // Ejecuta la búsqueda
+});
+
+// ❌ Limpiar búsqueda solo al hacer clic en el botón de limpiar
+document.getElementById('clearButton').addEventListener('click', function() {
+  clearResultsAndInput();  // Limpia input y resultados
 });
 
 document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+
+document.addEventListener('DOMContentLoaded', initializeClearButton);
