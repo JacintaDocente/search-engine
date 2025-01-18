@@ -7,7 +7,10 @@ const columnsToInlcudeInOrder = [7,4,1,2,3,8,5,6,0];
 const searchableColumns = [1, 2, 3, 5, 6, 7, 8]
 
 /* ON PAGE LOAD RUN */
-getFiltersOptions();
+document.addEventListener('DOMContentLoaded', async () => {
+  await getFiltersOptions();  // Cargar filtros dinámicos
+  await loadSearchFromURL();  // Ejecutar búsqueda si hay parámetros en la URL
+});
 /////////////////////
 
 async function getFiltersOptions() {
@@ -85,7 +88,6 @@ async function getFiltersOptions() {
     console.error('Error al generar los filtros:', error);
   }
 }
-
 
 // Función principal para obtener y convertir los datos
 async function fetchSheetAsJson() {
@@ -174,139 +176,192 @@ async function fetchSheetAsJson() {
   }
 }
 
-async function search(...searchIndexes) {
-  if (searchIndexes.length === 0) {
-    searchIndexes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+function search() {
+  // 🔎 Obtener el valor del input de búsqueda
+  let keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!keyword) {
+    keyword = '{{ALL}}';  // Si no hay palabra clave, usar {{ALL}}
   }
 
-  clearResults();
-
-  function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
-    const { table, tableInfo } = jsonData;
-    const headers = tableInfo.headers;
-  
-    // Verificar si hay datos para mostrar
-    if (table.length === 0) {
-      document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
-      
-      // 🔥 Ocultar la barra de scroll superior si no hay resultados
-      document.querySelector('.scroll-top').style.display = 'none';
-      return;
-    }
-  
-    // 🔥 Mostrar la barra de scroll superior si hay resultados
-    document.querySelector('.scroll-top').style.display = 'block';
-  
-    // 🏗️ Construir la tabla HTML
-    let html = '<table id="data-table"><thead><tr>';
-  
-    // ✅ Encabezados con inputs para filtrar
-    columnsToIncludeInOrder.forEach((index, colIndex) => {
-      html += `<th>
-                 ${headers[index]}<br>
-                 <input type="text" onkeyup="filterColumn(${colIndex})" placeholder="Filtrar...">
-               </th>`;
-    });
-  
-    html += '</tr></thead><tbody id="tableBody">';
-  
-    // ✅ Filas de datos
-    table.forEach(row => {
-      html += '<tr>';
-      columnsToIncludeInOrder.forEach(index => {
-        if (index === 4) {
-          html += `<td><a href="${row[index]}" class="button-link" target="_blank" title="Link a documento" rel="noopener noreferrer">
-                    <span class="material-symbols-outlined">file_open</span>
-                   </a></td>`;
-        } else {
-          html += `<td>${row[index]}</td>`;
-        }
-      });
-      html += '</tr>';
-    });
-  
-    html += '</tbody></table>';
-  
-    // ✅ Mostrar la tabla en el contenedor #results
-    document.getElementById('results').innerHTML = html;
-  
-    // 📏 Ajustar ancho del scroll superior al de la tabla
-    const tableWidth = document.getElementById('data-table').offsetWidth;
-    document.getElementById('scroll-top-sync').style.width = `${tableWidth}px`;
-  
-    // 🔍 Función para filtrar datos por columna
-    window.filterColumn = function (colIndex) {
-      const input = document.querySelectorAll('thead input')[colIndex];
-      const filter = input.value.toLowerCase();
-      const rows = document.querySelectorAll('#tableBody tr');
-  
-      rows.forEach(row => {
-        const cell = row.cells[colIndex];
-        if (cell) {
-          const cellText = cell.textContent.toLowerCase();
-          row.style.display = cellText.includes(filter) ? '' : 'none';
-        }
-      });
-    };
-  }
-  
-
-  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-
-  // 🔎 Obtener todas las materias seleccionadas
+  // 📚 Obtener materias seleccionadas (Checkboxes)
   const materiaSelected = Array.from(document.querySelectorAll('input[name="materiaFilter"]:checked'))
     .map(checkbox => checkbox.value.toLowerCase());
 
-  // 🔎 Obtener el filtro seleccionado en Tipo (index 8)
+  // 📂 Obtener el tipo seleccionado (Dropdown)
   const tipoSelected = document.getElementById('typeSelect')?.value.toLowerCase() || '';
+
+  // 📝 Actualizar los parámetros de la URL
+  const url = new URL(window.location);
+
+  url.searchParams.set('keyword', keyword);
+  materiaSelected.length > 0 ? url.searchParams.set('3', materiaSelected.join(',')) : url.searchParams.delete('3');
+  tipoSelected ? url.searchParams.set('8', tipoSelected) : url.searchParams.delete('8');
+
+  // 🔄 Actualizar la URL sin recargar la página
+  window.history.replaceState({}, '', url);
+
+  // ✅ Recargar la página para ejecutar la búsqueda
+  window.location.reload();  // Esto garantiza que la búsqueda se ejecute correctamente
+}
+
+// 🔍 Leer los parámetros de la URL y ejecutar la búsqueda
+async function loadSearchFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+
+  if (![...urlParams].length) {
+    return;  // No ejecutar búsqueda si no hay parámetros
+  }
+
+  const keyword = urlParams.get('keyword') || '{{ALL}}';
+  const materiaParam = urlParams.get('3') || '';
+  const tipoParam = urlParams.get('8') || '';
+
+  document.getElementById('searchInput').value = keyword !== '{{ALL}}' ? keyword : '';
+
+  // 📚 Materias seleccionadas (pueden ser varias, separadas por coma)
+  const materiaSelected = materiaParam ? materiaParam.split(',').map(item => item.trim().toLowerCase()) : [];
+
+  // 📂 Tipo seleccionado
+  const tipoSelected = tipoParam.toLowerCase();
+
+  // 🔍 Ejecutar la búsqueda con los parámetros
+  await performSearch(keyword, materiaSelected, tipoSelected);
+}
+
+
+async function performSearch(keyword, materiaSelected = [], tipoSelected = '') {
+  clearResults();  // Limpia los resultados anteriores
+
+  // ⛔ No ejecutar búsqueda si no hay keyword
+  if (!keyword) {
+    console.log('🚫 No hay keyword en la URL. No se ejecuta búsqueda.');
+    return;
+  }
 
   try {
     const jsonData = await fetchSheetAsJson();
 
     if (!jsonData || jsonData.table.length === 0) {
+      console.warn('⚠️ No se encontraron datos en la hoja.');
       document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
       return;
     }
 
-    const filteredData = {
+    console.log(`🔍 Keyword recibido: ${keyword}`);
+    console.log(`📚 Materias seleccionadas: ${materiaSelected}`);
+    console.log(`📂 Tipo seleccionado: ${tipoSelected}`);
+
+    let filteredData;
+
+    filteredData = {
       table: jsonData.table.filter(row => {
-        // ✅ Filtrar por múltiples Materias (index 3)
+        // 📚 Filtrar por Materia (columna 3)
         const materiaMatch = materiaSelected.length > 0
           ? materiaSelected.some(selectedMateria =>
-              row[3].toLowerCase().split(',').map(item => item.trim()).includes(selectedMateria)
+              (row[3] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedMateria.toLowerCase())
             )
           : true;
 
-        // ✅ Filtrar por Tipo (index 8)
-        const tipoMatch = tipoSelected ? row[8].toLowerCase() === tipoSelected : true;
-
-        // ✅ Filtrar por palabra clave
-        const searchInIndexes = (materiaSelected.length || tipoSelected) ? [...searchableColumns] : searchIndexes;
-
-        const keywordMatch = keyword
-          ? searchInIndexes.some(index => (row[index] || '').toLowerCase().includes(keyword))
+        // 🏷️ Filtrar por Tipo (columna 8)
+        const tipoMatch = tipoSelected
+          ? (row[8] || '').toLowerCase() === tipoSelected.toLowerCase()
           : true;
 
+        // 🔍 Filtrar por palabra clave SOLO si pasó el filtro de materia y tipo
+        const keywordMatch = keyword === '{{ALL}}'
+          ? true  // Si es {{ALL}}, no filtrar por palabra clave
+          : searchableColumns.some(index =>
+              (row[index] || '').toLowerCase().includes(keyword.toLowerCase())
+            );
+
+        // ✅ El registro debe cumplir TODOS los filtros aplicados
         return materiaMatch && tipoMatch && keywordMatch;
       }),
-      tableInfo: {
-        headers: jsonData.tableInfo.headers,
-        totalRecords: jsonData.table.length
-      }
+      tableInfo: jsonData.tableInfo
     };
 
+    // ✅ Mostrar resultados o mensaje si no hay coincidencias
     if (filteredData.table.length === 0) {
       document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
     } else {
-      // ✅ Aplicar el orden de columnas deseado
+      console.log('✅ Resultados encontrados:', filteredData.table);
       transformJsonToTable(filteredData, columnsToInlcudeInOrder);
-      syncScrollbars();
+      syncScrollbars();  // Sincronizar scrolls
     }
 
   } catch (error) {
-    console.error('Error al realizar la búsqueda:', error);
+    console.error('❌ Error al realizar la búsqueda:', error);
     document.getElementById('results').innerHTML = '<p>Hubo un error al cargar los datos.</p>';
   }
+}
+
+
+function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
+  const { table, tableInfo } = jsonData;
+  const headers = tableInfo.headers;
+
+  // ✅ Verificar si hay datos para mostrar
+  if (table.length === 0) {
+    document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
+    document.querySelector('.scroll-top').style.display = 'none';
+    return;
+  }
+
+  // ✅ Mostrar la barra de scroll superior si hay resultados
+  document.querySelector('.scroll-top').style.display = 'block';
+
+  // 🏗️ Construir la tabla HTML
+  let html = '<table id="data-table"><thead><tr>';
+
+  // 🔍 Encabezados con inputs para filtrar
+  columnsToIncludeInOrder.forEach((index, colIndex) => {
+    html += `<th>
+               ${headers[index]}<br>
+               <input type="text" onkeyup="filterColumn(${colIndex})" placeholder="Filtrar...">
+             </th>`;
+  });
+
+  html += '</tr></thead><tbody id="tableBody">';
+
+  // 📝 Llenar las filas con los datos filtrados
+  table.forEach(row => {
+    html += '<tr>';
+    columnsToIncludeInOrder.forEach(index => {
+      if (index === 4) {
+        // 🔗 Si es la columna 4, agregar link clicable
+        html += `<td><a href="${row[index]}" class="button-link" target="_blank" title="Link a documento" rel="noopener noreferrer">
+                  <span class="material-symbols-outlined">file_open</span>
+                 </a></td>`;
+      } else {
+        html += `<td>${row[index]}</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+
+  // ✅ Mostrar la tabla en el contenedor #results
+  document.getElementById('results').innerHTML = html;
+
+  // 📏 Ajustar ancho del scroll superior al de la tabla
+  const tableWidth = document.getElementById('data-table').offsetWidth;
+  document.getElementById('scroll-top-sync').style.width = `${tableWidth}px`;
+
+  // 🔍 Función para filtrar columnas
+  window.filterColumn = function (colIndex) {
+    const input = document.querySelectorAll('thead input')[colIndex];
+    const filter = input.value.toLowerCase();
+    const rows = document.querySelectorAll('#tableBody tr');
+
+    rows.forEach(row => {
+      const cell = row.cells[colIndex];
+      if (cell) {
+        const cellText = cell.textContent.toLowerCase();
+        row.style.display = cellText.includes(filter) ? '' : 'none';
+      }
+    });
+  };
 }
 
 
