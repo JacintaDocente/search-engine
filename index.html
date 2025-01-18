@@ -13,35 +13,39 @@
 <body>
   <header>
     <h1>Jacinta</h1>
-    <h2>Comunidad de documentos para docentes de</h2>
+    <h2>Comunidad de documentos para docentes de primaria</h2>
   </header>
   <div class="container">
 
     <h2>Buscador</h2>
  
-    <div class="filters">
-      <!-- Filtro de Material (Checkbox dinámico) -->
-      <div id="materiaFilter">
-        <h4>Material:</h4>
-        <!-- Aquí se insertarán los checkboxes dinámicamente -->
-      </div>
-    
-      <!-- Filtro de Tipo (Select dinámico) -->
-      <div id="typeFilter">
-        <h4>Tipo:</h4>
-        <select id="typeSelect">
-          <option value="">Todos</option>
-          <!-- Aquí se insertarán las opciones dinámicamente -->
-        </select>
-      </div>
-    </div>
+
     
     <div class="action-wrapper">
       <div class="search">
-        <input type="text" id="searchInput" placeholder="Escribe un término...">      
-        <button onclick="search(1,2,3,5,6,7,8)" title="Buscar documento">
-          <span class="material-symbols-outlined">search</span>
-        </button>
+        <div class="filters">
+          <!-- Filtro de Material (Checkbox dinámico) -->
+          <div id="materiaFilter" class="segmented-control">
+            <h4>Material:</h4>
+            <!-- Aquí se insertarán los checkboxes dinámicamente -->
+          </div>
+        
+          <!-- Filtro de Tipo (Select dinámico) -->
+          <div id="typeFilter">
+            <select id="typeSelect">
+              <option value="">Todos los tipos</option>
+              <!-- Aquí se insertarán las opciones dinámicamente -->
+            </select>
+          </div>
+        </div>
+
+        <div class="searchbar">
+          <input type="text" id="searchInput" placeholder="Escribe un término...">      
+          <button type="button" title="Buscar documento">
+            <span class="material-symbols-outlined">search</span>
+          </button>
+        </div>
+
       </div>
     
       <div class="actions">
@@ -52,10 +56,18 @@
     </div>
     
 
-
-    <div id="results" class="results"></div>
-
-
+    <div class="scroll-container">
+      <!-- Barra de desplazamiento superior -->
+      <div class="scroll-top">
+        <div id="scroll-top-sync"></div>
+      </div>
+    
+      <!-- Resultados de la tabla -->
+      <div id="results" class="results">
+        <!-- Aquí se carga la tabla dinámicamente -->
+      </div>
+    </div>
+    
 
 
   </div>
@@ -82,6 +94,9 @@
     </section>
  </div>
   <footer>
+    <ul>
+      <li><a target="_blank" href="https://docs.google.com/document/d/1jE0IFn5OmLBhVtDi5bOgSUyZbt5VhLd0MaPKHmymgcs/edit?usp=sharing">Preguntas Frequentes</a></li>
+    </ul> 
     <p>Powered by docentes <span class="material-symbols-outlined">
       bolt
       </span>  <span id="currentYear"></span> <a title="jacintadocentedb@gmail.com" href="mailto:jacintadocentedb@gmail.com"><span class="material-symbols-outlined">

@@ -21,11 +21,19 @@ async function getFiltersOptions() {
     )];
 
     // 🔎 Obtener valores únicos de la columna 8 (Tipo)
-    const typeOptions = [...new Set(jsonData.table.map(row => row[8]).filter(Boolean))];
+    const typeOptions = [...new Set(
+      jsonData.table
+        .map(row => row[8]) // Columna 8
+        .filter(Boolean)
+        .flatMap(value => value.split(',').map(item => item.trim()))
+    )];
 
-    // 🎯 Generar checkboxes para Materia
+    // 🎯 Generar checkboxes para Materia con estilo segmented
     const materiaFilterDiv = document.getElementById('materiaFilter');
-    materiaFilterDiv.innerHTML = '';  // Limpiar contenido previo
+    materiaFilterDiv.innerHTML = '';
+
+    const segmentedWrapper = document.createElement('div');
+    segmentedWrapper.classList.add('segmented-control');
 
     materiaOptions.forEach(option => {
       const checkbox = document.createElement('input');
@@ -38,23 +46,38 @@ async function getFiltersOptions() {
       label.htmlFor = `materia-${option}`;
       label.textContent = option;
 
-      const wrapper = document.createElement('div');
-      wrapper.appendChild(checkbox);
-      wrapper.appendChild(label);
-
-      materiaFilterDiv.appendChild(wrapper);
+      segmentedWrapper.appendChild(checkbox);
+      segmentedWrapper.appendChild(label);
     });
 
-    // 🎯 Generar <select> para Tipo
-    const typeSelect = document.getElementById('typeSelect');
-    typeSelect.innerHTML = '<option value="">Todos</option>';
+    materiaFilterDiv.appendChild(segmentedWrapper);
 
+    // 🎯 Generar dropdown estilizado para Tipo
+    const typeFilterDiv = document.getElementById('typeFilter');
+    typeFilterDiv.innerHTML = '';
+
+    const dropdownWrapper = document.createElement('div');
+    dropdownWrapper.classList.add('dropdown');
+
+    const typeSelect = document.createElement('select');
+    typeSelect.id = 'typeSelect';
+
+    // Opción por defecto
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Todos los tipos';
+    typeSelect.appendChild(defaultOption);
+
+    // Opciones dinámicas
     typeOptions.forEach(option => {
       const selectOption = document.createElement('option');
       selectOption.value = option;
       selectOption.textContent = option;
       typeSelect.appendChild(selectOption);
     });
+
+    dropdownWrapper.appendChild(typeSelect);
+    typeFilterDiv.appendChild(dropdownWrapper);
 
   } catch (error) {
     console.error('Error al generar los filtros:', error);
@@ -156,62 +179,75 @@ async function search(...searchIndexes) {
 
   clearResults();
 
-  // ✅ Función Global para generar la tabla
-function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
-  const { table, tableInfo } = jsonData;
-  const headers = tableInfo.headers;
-
-  // Reordenar los encabezados
-  const orderedHeaders = columnsToIncludeInOrder.map(index => headers[index]);
-
-  // Reordenar los datos según columnsToIncludeInOrder
-  const orderedData = table.map(row =>
-    columnsToIncludeInOrder.map(index => row[index])
-  );
-
-  // Construir la tabla HTML
-  let html = '<table><thead><tr>';
-
-  // Encabezados con inputs para filtrar
-  orderedHeaders.forEach((header, colIndex) => {
-    html += `<th>
-               ${header}<br>
-               <input type="text" onkeyup="filterColumn(${colIndex})" placeholder="Filtrar...">
-             </th>`;
-  });
-
-  html += '</tr></thead><tbody id="tableBody">';
-
-  // Filas de datos
-  orderedData.forEach(row => {
-    html += '<tr>';
-    row.forEach(cell => {
-      html += `<td>${cell}</td>`;
+  function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
+    const { table, tableInfo } = jsonData;
+    const headers = tableInfo.headers;
+  
+    // Verificar si hay datos para mostrar
+    if (table.length === 0) {
+      document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
+      
+      // 🔥 Ocultar la barra de scroll superior si no hay resultados
+      document.querySelector('.scroll-top').style.display = 'none';
+      return;
+    }
+  
+    // 🔥 Mostrar la barra de scroll superior si hay resultados
+    document.querySelector('.scroll-top').style.display = 'block';
+  
+    // 🏗️ Construir la tabla HTML
+    let html = '<table id="data-table"><thead><tr>';
+  
+    // ✅ Encabezados con inputs para filtrar
+    columnsToIncludeInOrder.forEach((index, colIndex) => {
+      html += `<th>
+                 ${headers[index]}<br>
+                 <input type="text" onkeyup="filterColumn(${colIndex})" placeholder="Filtrar...">
+               </th>`;
     });
-    html += '</tr>';
-  });
-
-  html += '</tbody></table>';
-
-  // Mostrar la tabla en el contenedor #results
-  document.getElementById('results').innerHTML = html;
-
-  // 🔍 Función para filtrar datos por columna
-  window.filterColumn = function (colIndex) {
-    const input = document.querySelectorAll('thead input')[colIndex];
-    const filter = input.value.toLowerCase();
-    const rows = document.querySelectorAll('#tableBody tr');
-
-    rows.forEach(row => {
-      const cell = row.cells[colIndex];
-      if (cell) {
-        const cellText = cell.textContent.toLowerCase();
-        row.style.display = cellText.includes(filter) ? '' : 'none';
-      }
+  
+    html += '</tr></thead><tbody id="tableBody">';
+  
+    // ✅ Filas de datos
+    table.forEach(row => {
+      html += '<tr>';
+      columnsToIncludeInOrder.forEach(index => {
+        if (index === 4) {
+          html += `<td><a href="${row[index]}" class="button-link" target="_blank" title="Link a documento" rel="noopener noreferrer">
+                    <span class="material-symbols-outlined">file_open</span>
+                   </a></td>`;
+        } else {
+          html += `<td>${row[index]}</td>`;
+        }
+      });
+      html += '</tr>';
     });
-  };
-}
-
+  
+    html += '</tbody></table>';
+  
+    // ✅ Mostrar la tabla en el contenedor #results
+    document.getElementById('results').innerHTML = html;
+  
+    // 📏 Ajustar ancho del scroll superior al de la tabla
+    const tableWidth = document.getElementById('data-table').offsetWidth;
+    document.getElementById('scroll-top-sync').style.width = `${tableWidth}px`;
+  
+    // 🔍 Función para filtrar datos por columna
+    window.filterColumn = function (colIndex) {
+      const input = document.querySelectorAll('thead input')[colIndex];
+      const filter = input.value.toLowerCase();
+      const rows = document.querySelectorAll('#tableBody tr');
+  
+      rows.forEach(row => {
+        const cell = row.cells[colIndex];
+        if (cell) {
+          const cellText = cell.textContent.toLowerCase();
+          row.style.display = cellText.includes(filter) ? '' : 'none';
+        }
+      });
+    };
+  }
+  
 
   const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
 
@@ -260,7 +296,9 @@ function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
     if (filteredData.table.length === 0) {
       document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
     } else {
-      transformJsonToTable(filteredData, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+      // ✅ Aplicar el orden de columnas deseado
+      transformJsonToTable(filteredData, columnsToInlcudeInOrder);
+      syncScrollbars();
     }
 
   } catch (error) {
@@ -270,14 +308,31 @@ function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
 }
 
 
+
 function clearResults() {
   const resultsDiv = document.getElementById('results');
   resultsDiv.innerHTML = '';  // Limpia el contenido previo
 }
 
+function syncScrollbars() {
+  const topScroll = document.querySelector('.scroll-top');
+  const bottomScroll = document.querySelector('.results');
+  if (!topScroll || !bottomScroll) return;
 
+  topScroll.onscroll = () => bottomScroll.scrollLeft = topScroll.scrollLeft;
+  bottomScroll.onscroll = () => topScroll.scrollLeft = bottomScroll.scrollLeft;
+}
 
+// 🔎 Ejecutar búsqueda al presionar Enter en el input de búsqueda
+document.getElementById('searchInput').addEventListener('keydown', function(event) {
+  if (event.key === 'Enter') {
+    search(1, 2, 3, 5, 6, 7, 8);  // Ejecuta la búsqueda
+  }
+});
 
-
+// 🔎 Ejecutar búsqueda al hacer clic en el botón de búsqueda
+document.querySelector('.searchbar button').addEventListener('click', function() {
+  search(1, 2, 3, 5, 6, 7, 8);  // Ejecuta la búsqueda
+});
 
 document.getElementById('currentYear').textContent = new Date().getFullYear();
