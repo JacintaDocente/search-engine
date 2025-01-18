@@ -330,6 +330,7 @@ td.responsable button {
     border: 1px solid black;
     padding: 2px 4px;
     cursor:pointer;
+    margin-bottom: 4px;
 }
 
 td.responsable button:hover {
@@ -367,6 +368,19 @@ footer {
     text-align: right;
     display:flex;
     justify-content: space-between;
+}
+
+footer ul li {
+    display:inline-block;
+    border-right: 1px solid #333;
+    padding-right: 4px;
+    margin-right: 4px;
+}
+
+footer ul li:last-child {
+    border-right: none;
+    padding-right: 0;
+    margin-right: 4px;
 }
 
 footer ul li a {
