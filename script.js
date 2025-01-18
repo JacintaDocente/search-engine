@@ -4,6 +4,8 @@ const columns = [0 /* Timestamp */ , 1 /* Titulo */, 2 /* Descripcion */, 3 /* M
 
 const columnsToInlcudeInOrder = [7,4,1,2,3,8,5,6,0];
 
+const searchableColumns = [1, 2, 3, 5, 6, 7, 8]
+
 /* ON PAGE LOAD RUN */
 getFiltersOptions();
 /////////////////////
@@ -279,7 +281,7 @@ async function search(...searchIndexes) {
         const tipoMatch = tipoSelected ? row[8].toLowerCase() === tipoSelected : true;
 
         // ✅ Filtrar por palabra clave
-        const searchInIndexes = (materiaSelected.length || tipoSelected) ? [1, 2, 3, 5, 6, 7, 8] : searchIndexes;
+        const searchInIndexes = (materiaSelected.length || tipoSelected) ? [...searchableColumns] : searchIndexes;
 
         const keywordMatch = keyword
           ? searchInIndexes.some(index => (row[index] || '').toLowerCase().includes(keyword))
@@ -326,13 +328,13 @@ function syncScrollbars() {
 // 🔎 Ejecutar búsqueda al presionar Enter en el input de búsqueda
 document.getElementById('searchInput').addEventListener('keydown', function(event) {
   if (event.key === 'Enter') {
-    search(1, 2, 3, 5, 6, 7, 8);  // Ejecuta la búsqueda
+    search(...searchableColumns);  // Ejecuta la búsqueda
   }
 });
 
 // 🔎 Ejecutar búsqueda al hacer clic en el botón de búsqueda
 document.querySelector('.searchbar button').addEventListener('click', function() {
-  search(1, 2, 3, 5, 6, 7, 8);  // Ejecuta la búsqueda
+  search(...searchableColumns);  // Ejecuta la búsqueda
 });
 
 document.getElementById('currentYear').textContent = new Date().getFullYear();
