@@ -402,6 +402,10 @@ footer .material-symbols-outlined {
     padding:40px 0;
 }
 
+section img {
+    cursor:pointer;
+}
+
 .sections section {
     text-align: center;
     padding:40px 22px;

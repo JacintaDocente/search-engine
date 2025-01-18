@@ -6,7 +6,9 @@ const columns = [0 /* Timestamp */ , 1 /* Titulo */, 2 /* Descripcion */, 3 /* M
 
 const columnsToInlcudeInOrder = [7,4,1,2,3,8,5,6,0];
 
-const searchableColumns = [1, 2, 3, 5, 6, 7, 8]
+const searchableColumns = [1, 2, 3, 5, 6, 7, 8];
+
+const discordLink ='https://discord.gg/vY2nVwjj';
 
 /* ON PAGE LOAD RUN */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -462,6 +464,15 @@ function toggleClearButton() {
 // 🔗 Función para abrir el formulario en una nueva pestaña
 function openForm() {
   window.open(formUrl, '_blank');  // Abre el formulario en una nueva pestaña
+}
+
+function goToSearch() {
+  const urlWithAnchor = window.location.href.split('#')[0] + '#buscador';
+  window.open(urlWithAnchor);  // Abre el formulario en una nueva pestaña
+}
+
+function goToCommunity() {
+  window.open(discordLink, '_blank');  // Abre el formulario en una nueva pestaña
 }
 
 // ✅ Inicializar el botón de compartir
