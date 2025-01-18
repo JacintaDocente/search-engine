@@ -1,4 +1,6 @@
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVyINoIo2LqaAAd8WdVhDRsSev_bu9RxuCoMznsjMd0oZ-AMCNgZ8b-7_bXPyOSVqT0lQU8qpZT6z2/pubhtml';
+
+const formUrl = 'https://forms.gle/qFUDpgGMCKNJygtd7';  
  
 const columns = [0 /* Timestamp */ , 1 /* Titulo */, 2 /* Descripcion */, 3 /* Materia */ , 4 /* Link */, 5 /* Notas */ , 6 /* Autor */, 7 /* Responsable */, 8 /* Tipo */];
 
@@ -348,7 +350,23 @@ function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
         html += `<td><a href="${row[index]}" class="button-link" target="_blank" title="Link a documento" rel="noopener noreferrer">
                   <span class="material-symbols-outlined">file_open</span>
                  </a></td>`;
-      } else {
+          } else if (index === 7) {
+            // ✉️ Si es la columna 7 (Responsable), agregar botones de correo y copiar
+            const email = row[index] || '';
+    
+            if (email) {
+              html += `<td class="responsable">
+                        <button title="Enviar correo" onclick="window.location.href='mailto:${email}'">
+                          <span class="material-symbols-outlined">email</span>
+                        </button>
+                        <button title="Copiar correo" onclick="copyToClipboard('${email}')">
+                          <span class="material-symbols-outlined">content_copy</span>
+                        </button>
+                      </td>`;
+            } else {
+              html += `<td></td>`;  // Si no hay email, mostrar guion
+            }
+          } else {
         html += `<td>${row[index]}</td>`;
       }
     });
@@ -443,7 +461,6 @@ function toggleClearButton() {
 
 // 🔗 Función para abrir el formulario en una nueva pestaña
 function openForm() {
-  const formUrl = 'https://forms.gle/qFUDpgGMCKNJygtd7';  // ⬅️ Reemplazar con el URL del formulario
   window.open(formUrl, '_blank');  // Abre el formulario en una nueva pestaña
 }
 
@@ -473,6 +490,17 @@ function initializeShareButton() {
     });
   });
 }
+
+// 📋 Copiar texto al portapapeles
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert(`📋 Correo copiado: ${text}`);
+  }).catch(err => {
+    console.error('❌ Error al copiar:', err);
+    alert('⚠️ Ocurrió un error al copiar el correo.');
+  });
+}
+
 
 // 🔄 Mostrar u ocultar el botón de compartir según la URL
 function toggleShareButton() {

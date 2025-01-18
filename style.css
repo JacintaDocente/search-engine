@@ -185,6 +185,7 @@ h2 {
     margin: none;
     align-items: center;
     border:none;
+    cursor:pointer;
 }
 
 .actions button {
@@ -268,7 +269,7 @@ input:-webkit-autofill {
 
   td, th {
     padding: 8px;
-    font-size: 14px;
+    font-size: 12px;
     text-transform: capitalize;
   }
 
@@ -279,6 +280,8 @@ input:-webkit-autofill {
     background-color: #fff;
     font-size: 12px;
     color: rgb(118, 118, 118);
+    width: 100%;
+    opacity: 0.8;
   }
   
   tr:nth-child(even){background-color: #f2f2f2;}
@@ -293,12 +296,19 @@ input:-webkit-autofill {
     font-size: 12px;
   }
 
-  th:nth-child(2) input{
+  th:nth-child(2) input,
+  th:nth-child(1) input{
     display:none;
   }
 
   td:nth-child(2){
     text-align:center;
+  }
+
+  
+  td:nth-child(3){
+    font-weight:500;
+    font-size:14px;
   }
 
   .button-link {
@@ -309,6 +319,21 @@ input:-webkit-autofill {
     border-radius: 6px;
     font-weight: bold;
     box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+}
+
+td.responsable {
+    text-align: center;;
+}
+
+td.responsable button {
+    border-radius: 25px;
+    border: 1px solid black;
+    padding: 2px 4px;
+    cursor:pointer;
+}
+
+td.responsable button:hover {
+    background-color: #ccc;
 }
 
 .icon-link {
