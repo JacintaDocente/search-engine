@@ -429,4 +429,44 @@ footer .material-symbols-outlined {
     .sections {
          display:block;
     }
+    .search {
+        width:80%;
+    }
+
+    
+    .filters {
+        display:block;
+        width: 100%;
+        position:relative;
+    }
+
+    #materiaFilter {
+        width: 100%;
+
+    }
+    
+    .segmented-control .segmented-control {
+        display:block;
+        width:100%;
+    }
+
+    .segmented-control .segmented-control label {
+        display:block;
+    }
+    
+
+    .actions button p {
+        display:none;
+    }
+
+
+    .action-wrapper {
+        gap: 4px;
+    }
+
+    #shareButton, .actions button  {
+        font-size:14px;
+        padding: 6px 8px;
+    }
+
 }
