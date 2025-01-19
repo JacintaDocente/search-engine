@@ -54,14 +54,14 @@ h2 {
 
 .filters {
     display: flex;
-    justify-content: right;
+    justify-content: center;
     width: 100%;
     gap:10px;
     margin-bottom:10px;
 }
 
 /* Contenedor de botones segmentados */
-.segmented-control {
+#materiaFilter.segmented-control > .segmented-control {
     display: inline-flex;
     border: 1px solid #ccc;
     border-radius: 25px;
@@ -138,6 +138,10 @@ h2 {
     gap:10px;
     margin-bottom:20px;
 }
+
+.search {
+    flex: 1;
+}
   
 .searchbar {
     display: flex;
@@ -176,7 +180,7 @@ h2 {
 
 #shareButton {
     display:none;
-    background-color: coral;
+    background-color: darkcyan;
     color: white;
     padding: 10px 14px;
     border-radius: 25px;
@@ -312,7 +316,7 @@ input:-webkit-autofill {
   }
 
   .button-link {
-    background-color: orange;
+    background-color: coral;
     color: white;
     display: inline-block;
     padding: 8px;
@@ -322,7 +326,8 @@ input:-webkit-autofill {
 }
 
 td.responsable {
-    text-align: center;;
+    display: flex;
+    gap: 4px;
 }
 
 td.responsable button {
@@ -330,7 +335,7 @@ td.responsable button {
     border: 1px solid black;
     padding: 2px 4px;
     cursor:pointer;
-    margin-bottom: 4px;
+    display:block;
 }
 
 td.responsable button:hover {
@@ -398,7 +403,6 @@ footer .material-symbols-outlined {
 .sections {
     margin-top:40px;
     display:flex;
-    margin-bottom:40px;
     padding:40px 0;
 }
 

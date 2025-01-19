@@ -19,28 +19,35 @@
 
     <h2 id="buscador">Buscador</h2>
  
+    <div class="filters">
+      <!-- Filtro de Material (Checkbox dinámico) -->
+      <div id="materiaFilter" class="segmented-control">
+        <!-- Aquí se insertarán los checkboxes dinámicamente -->
+      </div>
 
+       <!-- Filtro de Grado (Checkbox dinámico) -->
+       <div id="gradoFilter" class="segmented-control">
+        <!-- Aquí se insertarán los checkboxes dinámicamente -->
+      </div>
+    
+      <!-- Filtro de Tipo (Select dinámico) -->
+      <div id="typeFilter">
+        <select id="typeSelect">
+          <option value="">Todos los tipos</option>
+          <!-- Aquí se insertarán las opciones dinámicamente -->
+        </select>
+      </div>
+    </div>
     
     <div class="action-wrapper">
       <button type="button" id="shareButton" title="Compartir búsqueda">
         <span class="material-symbols-outlined">share</span>
       </button>
 
+
+
       <div class="search">
-        <div class="filters">
-          <!-- Filtro de Material (Checkbox dinámico) -->
-          <div id="materiaFilter" class="segmented-control">
-            <!-- Aquí se insertarán los checkboxes dinámicamente -->
-          </div>
-        
-          <!-- Filtro de Tipo (Select dinámico) -->
-          <div id="typeFilter">
-            <select id="typeSelect">
-              <option value="">Todos los tipos</option>
-              <!-- Aquí se insertarán las opciones dinámicamente -->
-            </select>
-          </div>
-        </div>
+
 
         <div class="searchbar">
           <input type="text" id="searchInput" placeholder="Escribe un término o pulsa la lupita para buscar todos...">

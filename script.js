@@ -2,11 +2,11 @@ const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVyINoIo2LqaA
 
 const formUrl = 'https://forms.gle/qFUDpgGMCKNJygtd7';  
  
-const columns = [0 /* Timestamp */ , 1 /* Titulo */, 2 /* Descripcion */, 3 /* Materia */ , 4 /* Link */, 5 /* Notas */ , 6 /* Autor */, 7 /* Responsable */, 8 /* Tipo */];
+const columns = [0 /* Timestamp */ , 1 /* Titulo */, 2 /* Descripcion */, 3 /* Materia */ , 4 /* Link */, 5 /* Notas */ , 6 /* Autor */, 7 /* Responsable */, 8 /* Tipo */, 9 /* Grado */];
 
-const columnsToInlcudeInOrder = [7,4,1,2,3,8,5,6,0];
+const columnsToInlcudeInOrder = [7,4,1,2,3,8,5,6,0,9];
 
-const searchableColumns = [1, 2, 3, 5, 6, 7, 8];
+const searchableColumns = [1, 2, 3, 5, 6, 7, 8,9];
 
 const discordLink ='https://discord.gg/vY2nVwjj';
 
@@ -37,10 +37,19 @@ async function getFiltersOptions() {
         .flatMap(value => value.split(',').map(item => item.trim()))
     )];
 
+    // 🔎 Obtener valores únicos de la columna 9 (Grado)
+    const gradoOptions = [...new Set(
+      jsonData.table
+        .map(row => row[9]) // Columna 9
+        .filter(Boolean)
+        .flatMap(value => value.split(',').map(item => item.trim()))
+    )];
+
     // 📝 Leer los parámetros de la URL
     const urlParams = new URLSearchParams(window.location.search);
     const selectedMaterias = (urlParams.get('3') || '').split(',').map(item => item.trim().toLowerCase());
     const selectedTipo = (urlParams.get('8') || '').toLowerCase();
+    const selectedGrados = (urlParams.get('9') || '').split(',').map(item => item.trim().toLowerCase());
 
     // 🎯 Generar checkboxes para Materia con estilo segmented
     const materiaFilterDiv = document.getElementById('materiaFilter');
@@ -103,11 +112,38 @@ async function getFiltersOptions() {
     dropdownWrapper.appendChild(typeSelect);
     typeFilterDiv.appendChild(dropdownWrapper);
 
+    // 🎯 Generar checkboxes para Grado con estilo segmented
+    const gradoFilterDiv = document.getElementById('gradoFilter');
+
+    const gradoSegmentedWrapper = document.createElement('div');
+    gradoSegmentedWrapper.classList.add('segmented-control');
+
+    gradoOptions.forEach(option => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.name = 'gradoFilter';
+      checkbox.value = option;
+      checkbox.id = `grado-${option}`;
+
+      // ✅ Marcar como seleccionado si está en los parámetros de la URL
+      if (selectedGrados.includes(option.toLowerCase())) {
+        checkbox.checked = true;
+      }
+
+      const label = document.createElement('label');
+      label.htmlFor = `grado-${option}`;
+      label.textContent = option;
+
+      gradoSegmentedWrapper.appendChild(checkbox);
+      gradoSegmentedWrapper.appendChild(label);
+    });
+
+    gradoFilterDiv.appendChild(gradoSegmentedWrapper);
+
   } catch (error) {
     console.error('Error al generar los filtros:', error);
   }
 }
-
 
 // Función principal para obtener y convertir los datos
 async function fetchSheetAsJson() {
@@ -200,7 +236,7 @@ function search() {
   // 🔎 Obtener el valor del input de búsqueda
   let keyword = document.getElementById('searchInput').value.trim().toLowerCase();
   if (!keyword) {
-    keyword = '{{ALL}}';  // Si no hay palabra clave, usar {{ALL}}
+    keyword = '{{ALL}}'; // Si no hay palabra clave, usar {{ALL}}
   }
 
   // 📚 Obtener materias seleccionadas (Checkboxes)
@@ -210,31 +246,38 @@ function search() {
   // 📂 Obtener el tipo seleccionado (Dropdown)
   const tipoSelected = document.getElementById('typeSelect')?.value.toLowerCase() || '';
 
+  // 📊 Obtener grados seleccionados (Checkboxes)
+  const gradoSelected = Array.from(document.querySelectorAll('input[name="gradoFilter"]:checked'))
+    .map(checkbox => checkbox.value.toLowerCase());
+
   // 📝 Actualizar los parámetros de la URL
   const url = new URL(window.location);
 
   url.searchParams.set('keyword', keyword);
   materiaSelected.length > 0 ? url.searchParams.set('3', materiaSelected.join(',')) : url.searchParams.delete('3');
   tipoSelected ? url.searchParams.set('8', tipoSelected) : url.searchParams.delete('8');
+  gradoSelected.length > 0 ? url.searchParams.set('9', gradoSelected.join(',')) : url.searchParams.delete('9');
 
   // 🔄 Actualizar la URL sin recargar la página
   window.history.replaceState({}, '', url);
 
   // ✅ Recargar la página para ejecutar la búsqueda
-  window.location.reload();  // Esto garantiza que la búsqueda se ejecute correctamente
+  window.location.reload(); // Esto garantiza que la búsqueda se ejecute correctamente
 }
+
 
 // 🔍 Leer los parámetros de la URL y ejecutar la búsqueda
 async function loadSearchFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
 
   if (![...urlParams].length) {
-    return;  // No ejecutar búsqueda si no hay parámetros
+    return; // No ejecutar búsqueda si no hay parámetros
   }
 
   const keyword = urlParams.get('keyword') || '{{ALL}}';
   const materiaParam = urlParams.get('3') || '';
   const tipoParam = urlParams.get('8') || '';
+  const gradoParam = urlParams.get('9') || ''; // Nuevo parámetro para grado
 
   document.getElementById('searchInput').value = keyword !== '{{ALL}}' ? keyword : '';
 
@@ -244,13 +287,15 @@ async function loadSearchFromURL() {
   // 📂 Tipo seleccionado
   const tipoSelected = tipoParam.toLowerCase();
 
+  // 📊 Grados seleccionados (pueden ser varios, separados por coma)
+  const gradoSelected = gradoParam ? gradoParam.split(',').map(item => item.trim().toLowerCase()) : [];
+
   // 🔍 Ejecutar la búsqueda con los parámetros
-  await performSearch(keyword, materiaSelected, tipoSelected);
+  await performSearch(keyword, materiaSelected, tipoSelected, gradoSelected);
 }
 
-
-async function performSearch(keyword, materiaSelected = [], tipoSelected = '') {
-  clearResults();  // Limpia los resultados anteriores
+async function performSearch(keyword, materiaSelected = [], tipoSelected = '', gradoSelected = []) {
+  clearResults(); // Limpia los resultados anteriores
 
   // ⛔ No ejecutar búsqueda si no hay keyword
   if (!keyword) {
@@ -270,6 +315,7 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '') {
     console.log(`🔍 Keyword recibido: ${keyword}`);
     console.log(`📚 Materias seleccionadas: ${materiaSelected}`);
     console.log(`📂 Tipo seleccionado: ${tipoSelected}`);
+    console.log(`📊 Grados seleccionados: ${gradoSelected}`);
 
     let filteredData;
 
@@ -287,15 +333,22 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '') {
           ? (row[8] || '').toLowerCase() === tipoSelected.toLowerCase()
           : true;
 
-        // 🔍 Filtrar por palabra clave SOLO si pasó el filtro de materia y tipo
+        // 📊 Filtrar por Grado (columna 9)
+        const gradoMatch = gradoSelected.length > 0
+          ? gradoSelected.some(selectedGrado =>
+              (row[9] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedGrado.toLowerCase())
+            )
+          : true;
+
+        // 🔍 Filtrar por palabra clave SOLO si pasó los demás filtros
         const keywordMatch = keyword === '{{ALL}}'
-          ? true  // Si es {{ALL}}, no filtrar por palabra clave
+          ? true // Si es {{ALL}}, no filtrar por palabra clave
           : searchableColumns.some(index =>
               (row[index] || '').toLowerCase().includes(keyword.toLowerCase())
             );
 
         // ✅ El registro debe cumplir TODOS los filtros aplicados
-        return materiaMatch && tipoMatch && keywordMatch;
+        return materiaMatch && tipoMatch && gradoMatch && keywordMatch;
       }),
       tableInfo: jsonData.tableInfo
     };
@@ -306,7 +359,82 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '') {
     } else {
       console.log('✅ Resultados encontrados:', filteredData.table);
       transformJsonToTable(filteredData, columnsToInlcudeInOrder);
-      syncScrollbars();  // Sincronizar scrolls
+      syncScrollbars(); // Sincronizar scrolls
+    }
+
+  } catch (error) {
+    console.error('❌ Error al realizar la búsqueda:', error);
+    document.getElementById('results').innerHTML = '<p>Hubo un error al cargar los datos.</p>';
+  }
+}
+
+
+async function performSearch(keyword, materiaSelected = [], tipoSelected = '', gradoSelected = []) {
+  clearResults(); // Limpia los resultados anteriores
+
+  // ⛔ No ejecutar búsqueda si no hay keyword
+  if (!keyword) {
+    console.log('🚫 No hay keyword en la URL. No se ejecuta búsqueda.');
+    return;
+  }
+
+  try {
+    const jsonData = await fetchSheetAsJson();
+
+    if (!jsonData || jsonData.table.length === 0) {
+      console.warn('⚠️ No se encontraron datos en la hoja.');
+      document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
+      return;
+    }
+
+    console.log(`🔍 Keyword recibido: ${keyword}`);
+    console.log(`📚 Materias seleccionadas: ${materiaSelected}`);
+    console.log(`📂 Tipo seleccionado: ${tipoSelected}`);
+    console.log(`📊 Grados seleccionados: ${gradoSelected}`);
+
+    let filteredData;
+
+    filteredData = {
+      table: jsonData.table.filter(row => {
+        // 📚 Filtrar por Materia (columna 3)
+        const materiaMatch = materiaSelected.length > 0
+          ? materiaSelected.some(selectedMateria =>
+              (row[3] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedMateria.toLowerCase())
+            )
+          : true;
+
+        // 🏷️ Filtrar por Tipo (columna 8)
+        const tipoMatch = tipoSelected
+          ? (row[8] || '').toLowerCase() === tipoSelected.toLowerCase()
+          : true;
+
+        // 📊 Filtrar por Grado (columna 9)
+        const gradoMatch = gradoSelected.length > 0
+          ? gradoSelected.some(selectedGrado =>
+              (row[9] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedGrado.toLowerCase())
+            )
+          : true;
+
+        // 🔍 Filtrar por palabra clave SOLO si pasó los demás filtros
+        const keywordMatch = keyword === '{{ALL}}'
+          ? true // Si es {{ALL}}, no filtrar por palabra clave
+          : searchableColumns.some(index =>
+              (row[index] || '').toLowerCase().includes(keyword.toLowerCase())
+            );
+
+        // ✅ El registro debe cumplir TODOS los filtros aplicados
+        return materiaMatch && tipoMatch && gradoMatch && keywordMatch;
+      }),
+      tableInfo: jsonData.tableInfo
+    };
+
+    // ✅ Mostrar resultados o mensaje si no hay coincidencias
+    if (filteredData.table.length === 0) {
+      document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
+    } else {
+      console.log('✅ Resultados encontrados:', filteredData.table);
+      transformJsonToTable(filteredData, columnsToInlcudeInOrder);
+      syncScrollbars(); // Sincronizar scrolls
     }
 
   } catch (error) {
