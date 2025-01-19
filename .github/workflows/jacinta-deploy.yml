@@ -35,10 +35,7 @@ jobs:
       - name: Prepare files
         run: |
           mkdir -p dist
-          cp *.html dist/  # Copiar todos los archivos HTML
-          cp *.css dist/   # Copiar todos los archivos CSS
-          cp *.js dist/    # Minificaremos más adelante
-          cp * dist/  # Copiar cualquier archivo restante, incluidas imágenes y otros formatos
+          find . -maxdepth 1 -type f -exec cp {} dist/ \;  # Copia solo archivos desde la raíz
           for file in dist/*.js; do
             terser "$file" --compress --mangle --output "$file"
           done
