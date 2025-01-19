@@ -13,7 +13,7 @@ Una aplicación web diseñada para facilitar la búsqueda y gestión de document
 
 1. **Clona el repositorio:**
    ```bash
-   git clone https://github.com/usuario/nombre-repo.git
+   git clone https://github.com/JacintaDocente/search-engine.git
    ```
 
 2. **Abre el proyecto:**
