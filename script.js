@@ -4,7 +4,7 @@ const formUrl = 'https://forms.gle/qFUDpgGMCKNJygtd7';
  
 const columns = [0 /* Timestamp */ , 1 /* Titulo */, 2 /* Descripcion */, 3 /* Materia */ , 4 /* Link */, 5 /* Notas */ , 6 /* Autor */, 7 /* Responsable */, 8 /* Tipo */, 9 /* Grado */];
 
-const columnsToInlcudeInOrder = [7,4,1,2,3,8,5,6,0,9];
+const columnsToInlcudeInOrder = [7,4,1,2,3,9,8,5,6,0];
 
 const searchableColumns = [1, 2, 3, 5, 6, 7, 8,9];
 
@@ -250,6 +250,9 @@ function search() {
   const gradoSelected = Array.from(document.querySelectorAll('input[name="gradoFilter"]:checked'))
     .map(checkbox => checkbox.value.toLowerCase());
 
+  // 🔄 Obtener el ciclo seleccionado
+  const cicloSelected = document.getElementById('cicloSelect')?.value;
+
   // 📝 Actualizar los parámetros de la URL
   const url = new URL(window.location);
 
@@ -257,6 +260,16 @@ function search() {
   materiaSelected.length > 0 ? url.searchParams.set('3', materiaSelected.join(',')) : url.searchParams.delete('3');
   tipoSelected ? url.searchParams.set('8', tipoSelected) : url.searchParams.delete('8');
   gradoSelected.length > 0 ? url.searchParams.set('9', gradoSelected.join(',')) : url.searchParams.delete('9');
+
+  // 🔄 Actualizar el parámetro `9` según el ciclo seleccionado
+  if (cicloSelected === '1er') {
+    url.searchParams.set('9', '1ero,2do,3ero');
+  } else if (cicloSelected === '2do') {
+    url.searchParams.set('9', '4to,5to,6to,7mo');
+  } else {
+    // Si no se selecciona ningún ciclo, no se altera el parámetro `9`
+    if (!gradoSelected.length) url.searchParams.delete('9');
+  }
 
   // 🔄 Actualizar la URL sin recargar la página
   window.history.replaceState({}, '', url);
@@ -368,7 +381,6 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '', g
   }
 }
 
-
 async function performSearch(keyword, materiaSelected = [], tipoSelected = '', gradoSelected = []) {
   clearResults(); // Limpia los resultados anteriores
 
@@ -442,7 +454,6 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '', g
     document.getElementById('results').innerHTML = '<p>Hubo un error al cargar los datos.</p>';
   }
 }
-
 
 function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
   const { table, tableInfo } = jsonData;
@@ -640,7 +651,6 @@ function copyToClipboard(text) {
   });
 }
 
-
 // 🔄 Mostrar u ocultar el botón de compartir según la URL
 function toggleShareButton() {
   const shareButton = document.getElementById('shareButton');
@@ -657,7 +667,6 @@ function toggleShareButton() {
 
 // 🟢 Llamar la función al cargar la página
 document.addEventListener('DOMContentLoaded', initializeShareButton);
-
 
 // 🔎 Ejecutar búsqueda al presionar Enter en el input de búsqueda
 document.getElementById('searchInput').addEventListener('keydown', function(event) {
@@ -677,6 +686,5 @@ document.getElementById('clearButton').addEventListener('click', function() {
 });
 
 document.getElementById('currentYear').textContent = new Date().getFullYear();
-
 
 document.addEventListener('DOMContentLoaded', initializeClearButton);
