@@ -1,4 +1,4 @@
-# Workflow para desplegar contenido estático con imágenes incluidas
+# Workflow para desplegar contenido estático con imágenes en la raíz
 name: Deploy static content to Pages
 
 on:
@@ -37,7 +37,11 @@ jobs:
           mkdir -p dist
           cp *.html dist/
           cp *.css dist/
-          cp -r images dist/  # Copiar la carpeta de imágenes
+          cp *.png dist/  # Copiar todas las imágenes PNG
+          cp *.jpg dist/  # Copiar todas las imágenes JPG
+          cp *.jpeg dist/ # Copiar todas las imágenes JPEG
+          cp *.gif dist/  # Copiar todas las imágenes GIF
+          cp *.svg dist/  # Copiar todas las imágenes SVG
           for file in *.js; do
             terser "$file" --compress --mangle --output "dist/$file"
           done
