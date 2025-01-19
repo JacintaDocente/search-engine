@@ -1,4 +1,4 @@
-# Simple workflow for deploying static content to Pages with minification
+# Workflow para desplegar contenido estático con imágenes incluidas
 name: Deploy static content to Pages
 
 on:
@@ -31,12 +31,13 @@ jobs:
       - name: Setup Terser
         run: npm install -g terser
 
-      # 3. Minify JavaScript
-      - name: Minify JavaScript
+      # 3. Prepare files for deployment
+      - name: Prepare files
         run: |
           mkdir -p dist
           cp *.html dist/
           cp *.css dist/
+          cp -r images dist/  # Copiar la carpeta de imágenes
           for file in *.js; do
             terser "$file" --compress --mangle --output "dist/$file"
           done
