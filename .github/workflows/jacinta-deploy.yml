@@ -1,40 +1,53 @@
-name: Build and Deploy to GitHub Pages
+# Simple workflow for deploying static content to Pages with minification
+name: Deploy static content to Pages
 
 on:
   push:
-    branches:
-      - main  
+    branches: ["main"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout del código fuente
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # 1. Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # 2. Configurar Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
+      # 2. Install Terser for minification
+      - name: Setup Terser
+        run: npm install -g terser
 
-      # 3. Instalar dependencias (si tienes package.json en la raíz)
-      - name: Install dependencies
-        run: |
-          if [ -f package.json ]; then
-            npm install
-          fi
-
-      # 4. Minificar JavaScript en la raíz
+      # 3. Minify JavaScript
       - name: Minify JavaScript
         run: |
-          npm install -g terser
-          terser *.js --compress --mangle --output dist/
+          mkdir -p dist
+          cp *.html dist/
+          cp *.css dist/
+          for file in *.js; do
+            terser "$file" --compress --mangle --output "dist/$file"
+          done
 
-      # 5. Publicar en GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      # 4. Upload the `dist` directory as an artifact for deployment
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          path: './dist'
+
+      # 5. Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
