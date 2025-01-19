@@ -1,0 +1,52 @@
+# Workflow para desplegar contenido estático, incluyendo imágenes en la raíz
+name: Deploy static content to Pages
+
+on:
+  push:
+    branches: ["main"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Install Terser for minification
+      - name: Setup Terser
+        run: npm install -g terser
+
+      # 3. Prepare files for deployment
+      - name: Prepare files
+        run: |
+          mkdir -p dist
+          find . -maxdepth 1 -type f -exec cp {} dist/ \;  # Copia solo archivos desde la raíz
+          for file in dist/*.js; do
+            terser "$file" --compress --mangle --output "$file"
+          done
+
+      # 4. Upload the `dist` directory as an artifact for deployment
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      # 5. Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
