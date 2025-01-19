@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  
 </head>
 <body>
   <header>
@@ -122,6 +123,42 @@
      <p>Sumate a la comunidad: compartí tus ideas, comentá y colaborá para mejorar el contenido y hacer conexiones valiosas.</p>
     </section>
  </div>
+
+<!-- Modal oculto -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <span class="close-button" id="closeModalButton">&times;</span>
+    <h2>Formulario de Denuncia</h2>
+    <form id="denunciaForm">
+      <div class="form-field">
+        <label for="nombre">Tu nombre (opcional):</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Anónimo">
+      </div>
+      <div class="form-field">
+        <label for="email">Tu correo electrónico:</label>
+        <input type="email" id="email" name="email" placeholder="correo@ejemplo.com" required>
+      </div>
+      <div class="form-field">
+        <label for="motivo">Motivo de la denuncia:</label>
+        <textarea id="motivo" name="motivo" rows="4" required></textarea>
+      </div>
+      <div class="form-field">
+        <label for="detalles">Detalles del documento:</label>
+        <textarea id="detalles" name="detalles" readonly></textarea>
+      </div>
+      <div class="form-field">
+        <label for="captcha">¿Cuánto es 3 + 4?</label>
+        <input type="text" id="captcha" name="captcha" placeholder="Escribe la respuesta" required>
+      </div>
+      <input type="hidden" id="dataField" name="data">
+      <button type="submit" class="button">Enviar</button>
+    </form>
+  </div>
+</div>
+
+<small>Descargo de responsabilidad: Cada usuario es responsable del contenido de su publicación, desligando de forma total al presente buscador que solo realiza trabajo de intermediación y búsqueda, sin intervenir en su  contenido. Las opiniones expresadas y el contenido pubilicado en los articulos  son responsabilidad exclusiva del usuario que publica su contenido.</small>
+
+
   <footer>
     <ul>
       <li><a target="_blank" href="https://docs.google.com/document/d/1jE0IFn5OmLBhVtDi5bOgSUyZbt5VhLd0MaPKHmymgcs/edit?usp=sharing">Preguntas Frequentes</a></li>

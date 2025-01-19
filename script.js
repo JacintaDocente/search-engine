@@ -1,3 +1,4 @@
+
 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVyINoIo2LqaAAd8WdVhDRsSev_bu9RxuCoMznsjMd0oZ-AMCNgZ8b-7_bXPyOSVqT0lQU8qpZT6z2/pubhtml';
 
 const formUrl = 'https://forms.gle/qFUDpgGMCKNJygtd7';  
@@ -10,10 +11,13 @@ const searchableColumns = [1, 2, 3, 5, 6, 7, 8,9];
 
 const discordLink ='https://discord.gg/vY2nVwjj';
 
+const encryptedWebhook = btoa("https://discord.com/api/webhooks/1330562664245760051/5wrLTdDLncPo83bRCiCGo-kKIa7laxh40VB6isQqDemclZ_esxHBv2tRjCNEgtdEDSMA");
+
 /* ON PAGE LOAD RUN */
 document.addEventListener('DOMContentLoaded', async () => {
   await getFiltersOptions();  // Cargar filtros dinámicos
   await loadSearchFromURL();  // Ejecutar búsqueda si hay parámetros en la URL
+  await initializeForm();
 });
 /////////////////////
 
@@ -486,7 +490,12 @@ function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
   table.forEach(row => {
     html += '<tr>';
     columnsToIncludeInOrder.forEach(index => {
-      if (index === 4) {
+     if (index === 0) {
+      html += `<td class="timestamp">${row[index]}  
+     <button type="button" class="reportButton" title="Denunciar este documento"  onclick='openModal(${JSON.stringify(row)})'>
+        <span class="material-symbols-outlined">report</span>
+    </button></td>`;
+    } else if (index === 4) {
         // 🔗 Si es la columna 4, agregar link clicable
         html += `<td><a href="${row[index]}" class="button-link" target="_blank" title="Link a documento" rel="noopener noreferrer">
                   <span class="material-symbols-outlined">file_open</span>
@@ -665,6 +674,37 @@ function toggleShareButton() {
   }
 }
 
+function openModal(data) {
+  // Mostrar el modal
+  const modal = document.getElementById("modal");
+  modal.classList.add("active");
+
+  // Actualizar el campo de solo lectura con una representación legible
+  const detallesField = document.getElementById("detalles");
+  detallesField.value = `
+    Fecha y Hora: ${data[0]}
+    Título: ${data[1]}
+    Descripción: ${data[2]}
+    Materia: ${data[3]}
+    Link: ${data[4]}
+    Notas: ${data[5]}
+    Autor: ${data[6]}
+    Responsable: ${data[7]}
+    Tipo: ${data[8]}
+    Grado: ${data[9]}
+  `.trim();
+
+  // Guardar los datos originales en el campo oculto
+  const dataField = document.getElementById("dataField");
+  dataField.value = JSON.stringify(data);
+}
+
+document.getElementById("closeModalButton").addEventListener("click", () => {
+  const modal = document.getElementById("modal");
+  modal.classList.remove("active");
+});
+
+
 // 🟢 Llamar la función al cargar la página
 document.addEventListener('DOMContentLoaded', initializeShareButton);
 
@@ -688,3 +728,104 @@ document.getElementById('clearButton').addEventListener('click', function() {
 document.getElementById('currentYear').textContent = new Date().getFullYear();
 
 document.addEventListener('DOMContentLoaded', initializeClearButton);
+
+function initializeForm() {
+
+  // Función para validar el formato del correo
+  function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  // Manejar el envío del formulario
+  document.getElementById("denunciaForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const nombre = document.getElementById("nombre").value || "Anónimo";
+    const email = document.getElementById("email").value.trim();
+    const motivo = document.getElementById("motivo").value.trim();
+    const detalles = document.getElementById("detalles").value;
+    const data = JSON.parse(document.getElementById("dataField").value); // Convertir JSON a array
+    const link = data[4]; // Extraer la URL del documento
+    const captcha = document.getElementById("captcha").value.trim();
+
+    // Validar que el correo esté presente y sea válido
+    if (!email || !validateEmail(email)) {
+      alert("Por favor, ingresa un correo electrónico válido.");
+      return;
+    }
+
+    // Validar CAPTCHA
+    if (captcha !== "7") {
+      alert("Respuesta incorrecta en el CAPTCHA.");
+      return;
+    }
+
+    // Obtener denuncias previas del localStorage
+    const denuncias = JSON.parse(localStorage.getItem("denuncias")) || [];
+    const now = Date.now();
+
+    // Limpiar denuncias que tengan más de 7 días
+    const denunciasValidas = denuncias.filter(d => now - d.timestamp < 7 * 24 * 60 * 60 * 1000);
+
+    // Verificar si ya existe una denuncia con los mismos datos
+    if (denunciasValidas.some(d => d.motivo === motivo && d.detalles === detalles)) {
+      alert("Ya has enviado esta denuncia anteriormente.");
+      return;
+    }
+
+    // Verificar si el usuario ya denunció el mismo link
+    if (denunciasValidas.some(d => d.link === link)) {
+      alert("Ya has denunciado ese link, estamos trabajando en ello.");
+      return;
+    }
+
+    // Verificar si el usuario ha alcanzado el límite de 5 denuncias
+    if (denunciasValidas.length >= 5) {
+      alert("Has enviado más de 5 denuncias. Por favor, contáctanos directamente por correo.");
+      return;
+    }
+
+    // Guardar la nueva denuncia en el localStorage
+    denunciasValidas.push({ motivo, detalles, link, timestamp: now });
+    localStorage.setItem("denuncias", JSON.stringify(denunciasValidas));
+
+    // Enviar la denuncia al webhook
+    const webhookUrl = atob(encryptedWebhook);
+    try {
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: "📢 **Nueva denuncia recibida**",
+          embeds: [
+            {
+              title: "Detalles de la Denuncia",
+              fields: [
+                { name: "👤 Nombre", value: nombre, inline: true },
+                { name: "📧 Correo", value: email, inline: true },
+                { name: "✍️ Motivo", value: motivo, inline: false },
+                { name: "📄 Detalles del Documento", value: `\`\`\`\n${detalles}\n\`\`\``, inline: false },
+                { name: "🗂️ Link del Documento", value: link, inline: false }
+              ],
+              color: 16711680 // Color rojo para el embed
+            }
+          ]
+        })
+      });
+
+      if (response.ok) {
+        alert("Denuncia enviada con éxito.");
+        document.getElementById("modal").classList.remove("active"); // Cerrar modal
+        e.target.reset(); // Limpiar el formulario
+      } else {
+        alert("Hubo un error al enviar la denuncia. Inténtalo nuevamente.");
+      }
+    } catch (error) {
+      console.error("Error al enviar la denuncia:", error);
+      alert("Ocurrió un error inesperado. Por favor, inténtalo nuevamente.");
+    }
+  });
+}
+
+
