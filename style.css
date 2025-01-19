@@ -455,6 +455,11 @@ section img {
     font-weight: 300;
 }
 
+.disclaimer {
+    text-align: center;
+    display: block;
+}
+
     /* Estilos para el modal */
     .modal {
         display: none; /* Oculto por defecto */

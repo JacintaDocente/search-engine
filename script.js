@@ -616,7 +616,7 @@ function openForm() {
 
 function goToSearch() {
   const urlWithAnchor = window.location.href.split('#')[0] + '#buscador';
-  window.open(urlWithAnchor);  // Abre el formulario en una nueva pestaña
+  window.location.href = urlWithAnchor; // Redirige al ancla en la misma pestaña
 }
 
 function goToCommunity() {
