@@ -364,7 +364,9 @@ td.responsable button:hover {
 }
 
 .timestamp {
-    white-space: nowrap;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .center {
     text-align:center;
