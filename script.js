@@ -9,7 +9,7 @@ const columnsToInlcudeInOrder = [7,4,1,2,3,9,8,5,6,0];
 
 const searchableColumns = [1, 2, 3, 5, 6, 7, 8,9];
 
-const discordLink ='https://discord.gg/vY2nVwjj';
+const discordLink ='https://discord.gg/QVfAYgUuFY';
 
 const encryptedWebhook = btoa("https://discord.com/api/webhooks/1330562664245760051/5wrLTdDLncPo83bRCiCGo-kKIa7laxh40VB6isQqDemclZ_esxHBv2tRjCNEgtdEDSMA");
 
@@ -642,7 +642,7 @@ function initializeShareButton() {
     // 📋 Copiar la URL al portapapeles
     navigator.clipboard.writeText(url).then(() => {
       // ✅ Confirmación visual (puedes personalizar este mensaje)
-      alert('🔗 ¡URL copiada al portapapeles!');
+      alert('🔗 ¡URL con los filtros de busqueda copiada al portapapeles!');
     }).catch(err => {
       console.error('❌ Error al copiar la URL:', err);
       alert('⚠️ Ocurrió un error al copiar la URL.');
