@@ -45,7 +45,7 @@ header h1, header h2 {
     
 h2 {
     text-align: center;
-    margin: 40px auto 20px auto;
+    margin: 40px auto 10px auto;
     font-size:36px;
     color:#202124;
     font-weight: 300;
@@ -165,7 +165,7 @@ h2 {
     background-color: transparent;
 }
 
-.searchbar button, .actions button {
+.searchbar button, .actions button, .search button {
     border: 0;
     background-color: transparent;
     color: #5f6368;
@@ -202,6 +202,12 @@ h2 {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.actions.search button {
+  background-color: limegreen;
+  font-size: 24px;
+  margin-bottom:20px;
 }
 
 .actions button span {
@@ -531,7 +537,11 @@ section img {
       .button:hover {
         background-color: #0056b3;
       }
-
+h4 {
+  font-weight: 400;
+  text-align: center;
+  margin-bottom:20px;
+}
 
 @media (max-width:1025px) {
     .sections {

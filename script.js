@@ -334,26 +334,33 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '', g
     console.log(`📂 Tipo seleccionado: ${tipoSelected}`);
     console.log(`📊 Grados seleccionados: ${gradoSelected}`);
 
-    let filteredData;
+    // Función para normalizar texto (elimina acentos y convierte a minúsculas)
+    const normalizeText = (text) => text
+      ? text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      : '';
 
-    filteredData = {
+    let filteredData = {
       table: jsonData.table.filter(row => {
         // 📚 Filtrar por Materia (columna 3)
         const materiaMatch = materiaSelected.length > 0
           ? materiaSelected.some(selectedMateria =>
-              (row[3] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedMateria.toLowerCase())
+              (row[3] || '').split(',')
+                .map(item => normalizeText(item.trim()))
+                .includes(normalizeText(selectedMateria))
             )
           : true;
 
         // 🏷️ Filtrar por Tipo (columna 8)
         const tipoMatch = tipoSelected
-          ? (row[8] || '').toLowerCase() === tipoSelected.toLowerCase()
+          ? normalizeText(row[8] || '') === normalizeText(tipoSelected)
           : true;
 
         // 📊 Filtrar por Grado (columna 9)
         const gradoMatch = gradoSelected.length > 0
           ? gradoSelected.some(selectedGrado =>
-              (row[9] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedGrado.toLowerCase())
+              (row[9] || '').split(',')
+                .map(item => normalizeText(item.trim()))
+                .includes(normalizeText(selectedGrado))
             )
           : true;
 
@@ -361,7 +368,7 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '', g
         const keywordMatch = keyword === '{{ALL}}'
           ? true // Si es {{ALL}}, no filtrar por palabra clave
           : searchableColumns.some(index =>
-              (row[index] || '').toLowerCase().includes(keyword.toLowerCase())
+              normalizeText(row[index] || '').includes(normalizeText(keyword))
             );
 
         // ✅ El registro debe cumplir TODOS los filtros aplicados
@@ -385,79 +392,6 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '', g
   }
 }
 
-async function performSearch(keyword, materiaSelected = [], tipoSelected = '', gradoSelected = []) {
-  clearResults(); // Limpia los resultados anteriores
-
-  // ⛔ No ejecutar búsqueda si no hay keyword
-  if (!keyword) {
-    console.log('🚫 No hay keyword en la URL. No se ejecuta búsqueda.');
-    return;
-  }
-
-  try {
-    const jsonData = await fetchSheetAsJson();
-
-    if (!jsonData || jsonData.table.length === 0) {
-      console.warn('⚠️ No se encontraron datos en la hoja.');
-      document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
-      return;
-    }
-
-    console.log(`🔍 Keyword recibido: ${keyword}`);
-    console.log(`📚 Materias seleccionadas: ${materiaSelected}`);
-    console.log(`📂 Tipo seleccionado: ${tipoSelected}`);
-    console.log(`📊 Grados seleccionados: ${gradoSelected}`);
-
-    let filteredData;
-
-    filteredData = {
-      table: jsonData.table.filter(row => {
-        // 📚 Filtrar por Materia (columna 3)
-        const materiaMatch = materiaSelected.length > 0
-          ? materiaSelected.some(selectedMateria =>
-              (row[3] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedMateria.toLowerCase())
-            )
-          : true;
-
-        // 🏷️ Filtrar por Tipo (columna 8)
-        const tipoMatch = tipoSelected
-          ? (row[8] || '').toLowerCase() === tipoSelected.toLowerCase()
-          : true;
-
-        // 📊 Filtrar por Grado (columna 9)
-        const gradoMatch = gradoSelected.length > 0
-          ? gradoSelected.some(selectedGrado =>
-              (row[9] || '').toLowerCase().split(',').map(item => item.trim()).includes(selectedGrado.toLowerCase())
-            )
-          : true;
-
-        // 🔍 Filtrar por palabra clave SOLO si pasó los demás filtros
-        const keywordMatch = keyword === '{{ALL}}'
-          ? true // Si es {{ALL}}, no filtrar por palabra clave
-          : searchableColumns.some(index =>
-              (row[index] || '').toLowerCase().includes(keyword.toLowerCase())
-            );
-
-        // ✅ El registro debe cumplir TODOS los filtros aplicados
-        return materiaMatch && tipoMatch && gradoMatch && keywordMatch;
-      }),
-      tableInfo: jsonData.tableInfo
-    };
-
-    // ✅ Mostrar resultados o mensaje si no hay coincidencias
-    if (filteredData.table.length === 0) {
-      document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
-    } else {
-      console.log('✅ Resultados encontrados:', filteredData.table);
-      transformJsonToTable(filteredData, columnsToInlcudeInOrder);
-      syncScrollbars(); // Sincronizar scrolls
-    }
-
-  } catch (error) {
-    console.error('❌ Error al realizar la búsqueda:', error);
-    document.getElementById('results').innerHTML = '<p>Hubo un error al cargar los datos.</p>';
-  }
-}
 
 function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
   const { table, tableInfo } = jsonData;

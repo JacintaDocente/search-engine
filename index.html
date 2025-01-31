@@ -19,7 +19,32 @@
   <div class="container">
 
     <h2 id="buscador">Buscador</h2>
+    <h4>Escribe un término o selecciona un filtro y luego toca buscar</h4>
  
+
+    
+    <div class="action-wrapper">
+      <button type="button" id="shareButton" title="Compartir búsqueda">
+        <span class="material-symbols-outlined">share</span>
+      </button>
+
+
+
+      <div class="search">
+
+        <div class="searchbar">
+          <input type="text" id="searchInput" placeholder="Buscador">
+        </div>      
+      </div>
+    
+      <div class="actions">
+        <button onclick="openForm()" title="Subir documento">
+          <span class="material-symbols-outlined">upload_file</span>
+          <p>SUBIR DOCUMENTO</p>
+        </button>
+      </div>
+    </div>
+
     <div class="filters">
       <!-- Filtro de Material (Checkbox dinámico) -->
       <div id="materiaFilter" class="segmented-control">
@@ -49,41 +74,13 @@
         </select>
       </div>
     </div>
-    
-    <div class="action-wrapper">
-      <button type="button" id="shareButton" title="Compartir búsqueda">
-        <span class="material-symbols-outlined">share</span>
+
+    <div class="actions search">
+      <button onclick="search()" title="Buscar">
+        <p>BUSCAR DOCUMENTOS</p>
       </button>
-
-
-
-      <div class="search">
-
-
-        <div class="searchbar">
-          <input type="text" id="searchInput" placeholder="Escribe un término o pulsa la lupita para buscar todos...">
-          
-          <!-- ❌ Botón de limpiar -->
-          <button type="button" id="clearButton" title="Limpiar búsqueda" style="display: none;">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-
-          <!-- 🔍 Botón de búsqueda -->
-          <button type="button" id="searchButton" title="Buscar documento">
-            <span class="material-symbols-outlined">search</span>
-          </button>
-        
-
-        </div>      
-      </div>
-    
-      <div class="actions">
-        <button onclick="openForm()" title="Subir documento">
-          <span class="material-symbols-outlined">upload_file</span>
-          <p>SUBIR DOCUMENTO</p>
-        </button>
-      </div>
     </div>
+    
     
 
     <div class="scroll-container">
