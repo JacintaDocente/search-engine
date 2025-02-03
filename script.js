@@ -329,11 +329,6 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '', g
       return;
     }
 
-    console.log(`🔍 Keyword recibido: ${keyword}`);
-    console.log(`📚 Materias seleccionadas: ${materiaSelected}`);
-    console.log(`📂 Tipo seleccionado: ${tipoSelected}`);
-    console.log(`📊 Grados seleccionados: ${gradoSelected}`);
-
     // Función para normalizar texto (elimina acentos y convierte a minúsculas)
     const normalizeText = (text) => text
       ? text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -381,7 +376,6 @@ async function performSearch(keyword, materiaSelected = [], tipoSelected = '', g
     if (filteredData.table.length === 0) {
       document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
     } else {
-      console.log('✅ Resultados encontrados:', filteredData.table);
       transformJsonToTable(filteredData, columnsToInlcudeInOrder);
       syncScrollbars(); // Sincronizar scrolls
     }
@@ -500,32 +494,6 @@ function syncScrollbars() {
 function clearResultsAndInput() {
   document.getElementById('searchInput').value = '';  // Limpia el input de búsqueda
   clearResults();  // Limpia los resultados
-}
-
-// ✅ Inicializar el botón de limpiar búsqueda
-function initializeClearButton() {
-  const searchInput = document.getElementById('searchInput');
-  const clearButton = document.getElementById('clearButton');
-
-  if (!searchInput || !clearButton) {
-    console.warn('🔍 searchInput o clearButton no encontrados en el DOM.');
-    return;
-  }
-
-  // 🔍 Mostrar u ocultar el botón al escribir en el input
-  searchInput.addEventListener('input', function () {
-    toggleClearButton();
-  });
-
-  // ❌ Limpiar el input al hacer clic en el botón
-  clearButton.addEventListener('click', function () {
-    searchInput.value = '';             // Limpiar input
-    toggleClearButton();                // Ocultar botón
-    clearResults();                     // Limpiar resultados
-  });
-
-  // 📌 Mostrar el botón si hay parámetro 'keyword' en la URL
-  toggleClearButton();
 }
 
 // 🔄 Mostrar u ocultar el botón de limpiar según el estado del input o la URL
@@ -647,16 +615,6 @@ document.getElementById('searchInput').addEventListener('keydown', function(even
   if (event.key === 'Enter') {
     search(...searchableColumns);  // Ejecuta la búsqueda
   }
-});
-
-// 🔎 Ejecutar búsqueda solo al hacer clic en el botón de búsqueda
-document.getElementById('searchButton').addEventListener('click', function() {
-  search();  // Ejecuta la búsqueda
-});
-
-// ❌ Limpiar búsqueda solo al hacer clic en el botón de limpiar
-document.getElementById('clearButton').addEventListener('click', function() {
-  clearResultsAndInput();  // Limpia input y resultados
 });
 
 document.getElementById('currentYear').textContent = new Date().getFullYear();

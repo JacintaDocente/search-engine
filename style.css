@@ -204,11 +204,41 @@ h2 {
     gap: 4px;
 }
 
+.actions.search {
+  display:flex;
+  justify-content: center; 
+  align-items: center; 
+  margin-bottom:20px;
+}
+
 .actions.search button {
   background-color: limegreen;
   font-size: 24px;
-  margin-bottom:20px;
 }
+
+.actions.search .search-group {
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  gap: 8px;
+}
+
+.actions.search a {
+  background-color: gainsboro;
+  font-size: 24px;
+  margin-bottom:20px;
+  padding: 10px 14px;
+  border-radius: 25px;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+  vertical-align: middle;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color:white;
+}
+
 
 .actions button span {
     vertical-align: middle;

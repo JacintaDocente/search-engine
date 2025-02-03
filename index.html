@@ -76,9 +76,17 @@
     </div>
 
     <div class="actions search">
-      <button onclick="search()" title="Buscar">
-        <p>BUSCAR DOCUMENTOS</p>
-      </button>
+      <div class="search-group">
+        <button onclick="search()" title="Buscar">
+          <p>BUSCAR DOCUMENTOS</p>
+        </button>
+        <a href="#" title="Limpiar búsqueda" id="clearButton" onclick="history.pushState({}, '', window.location.pathname); location.reload();">
+          <span class="material-symbols-outlined">
+            close
+          </span>
+        </a>
+      </div>
+
     </div>
     
     
