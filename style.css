@@ -577,6 +577,15 @@ h4 {
         display:none;
     }
 
+    .actions.search button p {
+      display:block;
+  }
+
+  .actions.search {
+    width:100%;
+  }
+
+
 
     .action-wrapper {
         gap: 4px;
