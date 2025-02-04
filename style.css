@@ -573,6 +573,21 @@ h4 {
   margin-bottom:20px;
 }
 
+.call-to-action {
+  background-color: powderblue;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+#searchDescription {
+  text-align: center;
+  display: block;
+  padding-bottom: 10px;
+}
+
 @media (max-width:1025px) {
     .sections {
          display:block;
@@ -594,7 +609,7 @@ h4 {
     }
     
     .segmented-control .segmented-control {
-        display:block;
+        display:block !important;
         width:100%;
     }
 

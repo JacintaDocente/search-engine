@@ -18,6 +18,17 @@
   </header>
   <div class="container">
 
+    <div class="call-to-action">
+      Compartí tus documentos       
+      
+      <div class="actions">
+        <button onclick="openForm()" title="Subir documento">
+          <span class="material-symbols-outlined">upload_file</span>
+          <p>SUBIR DOCUMENTO</p>
+        </button>
+      </div>
+    </div>
+
     <h2 id="buscador">Buscador</h2>
     <h4>Escribe un término o selecciona un filtro y luego toca buscar</h4>
  
@@ -38,12 +49,7 @@
              
       </div>
     
-      <div class="actions">
-        <button onclick="openForm()" title="Subir documento">
-          <span class="material-symbols-outlined">upload_file</span>
-          <p>SUBIR DOCUMENTO</p>
-        </button>
-      </div>
+
     </div>
 
     <div class="filters">
@@ -51,6 +57,9 @@
       <div id="materiaFilter" class="segmented-control">
         <!-- Aquí se insertarán los checkboxes dinámicamente -->
       </div>
+    </div>
+
+    <div class="filters">
 
        <!-- Filtro de Grado (Checkbox dinámico) -->
        <div id="gradoFilter" class="segmented-control">
@@ -67,13 +76,13 @@
         </div>
       </div>
 
-      <!-- Filtro de Tipo (Select dinámico) -->
       <div id="typeFilter">
         <select id="typeSelect">
           <option value="">Todos los tipos</option>
           <!-- Aquí se insertarán las opciones dinámicamente -->
         </select>
       </div>
+    
     </div>
     
     
