@@ -244,68 +244,64 @@ async function getFiltersOptions() {
   async function performSearch(keyword, materiaSelected = [], tipoSelected = '', gradoSelected = []) {
     clearResults(); // Limpia los resultados anteriores
   
-    // ⛔ No ejecutar búsqueda si no hay keyword
     if (!keyword) {
-      console.log('🚫 No hay keyword en la URL. No se ejecuta búsqueda.');
+      console.log('🚫 No hay keyword en la búsqueda. No se ejecuta búsqueda.');
       return;
     }
   
     try {
       const jsonData = await fetchSheetAsJson();
   
+      let resultsDescriptionContainer = document.getElementById("resultsDescriptionContainer");
+  
       if (!jsonData || jsonData.table.length === 0) {
         console.warn('⚠️ No se encontraron datos en la hoja.');
-        document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
+        resultsDescriptionContainer.innerHTML = `<small>No hay resultados para tu búsqueda.</small>`; // ✅ Mostrar mensaje en lugar de ocultarlo
+        document.getElementById('results').innerHTML = '';
         return;
       }
   
-      // Función para normalizar texto (elimina acentos y convierte a minúsculas)
-      const normalizeText = (text) => text
-        ? text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-        : '';
-  
+      // 🔎 Filtrar los datos
       let filteredData = {
         table: jsonData.table.filter(row => {
-          // 📚 Filtrar por Materia (columna 3)
           const materiaMatch = materiaSelected.length > 0
             ? materiaSelected.some(selectedMateria =>
-                (row[3] || '').split(',')
-                  .map(item => normalizeText(item.trim()))
-                  .includes(normalizeText(selectedMateria))
-              )
+                (row[3] || '').split(',').map(item => item.trim().toLowerCase()).includes(selectedMateria.toLowerCase()))
             : true;
   
-          // 🏷️ Filtrar por Tipo (columna 8)
           const tipoMatch = tipoSelected
-            ? normalizeText(row[8] || '') === normalizeText(tipoSelected)
+            ? (row[8] || '').toLowerCase() === tipoSelected.toLowerCase()
             : true;
   
-          // 📊 Filtrar por Grado (columna 9)
           const gradoMatch = gradoSelected.length > 0
             ? gradoSelected.some(selectedGrado =>
-                (row[9] || '').split(',')
-                  .map(item => normalizeText(item.trim()))
-                  .includes(normalizeText(selectedGrado))
-              )
+                (row[9] || '').split(',').map(item => item.trim().toLowerCase()).includes(selectedGrado.toLowerCase()))
             : true;
   
-          // 🔍 Filtrar por palabra clave SOLO si pasó los demás filtros
-          const keywordMatch = keyword === '{{ALL}}'
-            ? true // Si es {{ALL}}, no filtrar por palabra clave
-            : searchableColumns.some(index =>
-                normalizeText(row[index] || '').includes(normalizeText(keyword))
-              );
+          const keywordMatch = keyword === "{{ALL}}"
+            ? true
+            : searchableColumns.some(index => (row[index] || '').toLowerCase().includes(keyword.toLowerCase()));
   
-          // ✅ El registro debe cumplir TODOS los filtros aplicados
           return materiaMatch && tipoMatch && gradoMatch && keywordMatch;
         }),
         tableInfo: jsonData.tableInfo
       };
   
-      // ✅ Mostrar resultados o mensaje si no hay coincidencias
-      if (filteredData.table.length === 0) {
-        document.getElementById('results').innerHTML = '<p>No hubo resultados para tu búsqueda.</p>';
+      // ✅ Actualizar el contenido de `resultsDescriptionContainer`
+      if (filteredData.table.length > 0) {
+        resultsDescriptionContainer.innerHTML = `<small>${generateResultsDescription(
+          keyword,
+          materiaSelected,
+          gradoSelected,
+          document.getElementById("cicloSelect")?.value.trim(),
+          tipoSelected
+        )}</small>`;
       } else {
+        resultsDescriptionContainer.innerHTML = `<small>No hay resultados para tu búsqueda.</small>`; // ✅ Mostrar mensaje si no hay resultados
+      }
+  
+      // ✅ Mostrar la tabla si hay resultados
+      if (filteredData.table.length > 0) {
         transformJsonToTable(filteredData, columnsToInlcudeInOrder);
         syncScrollbars(); // Sincronizar scrolls
       }
@@ -417,4 +413,256 @@ async function getFiltersOptions() {
       }
     });
   }
+  
+  
+
+
+function clearResults() {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';  // Limpia el contenido previo
+  }
+  
+  function syncScrollbars() {
+    const topScroll = document.querySelector('.scroll-top');
+    const bottomScroll = document.querySelector('.results');
+    if (!topScroll || !bottomScroll) return;
+  
+    topScroll.onscroll = () => bottomScroll.scrollLeft = topScroll.scrollLeft;
+    bottomScroll.onscroll = () => topScroll.scrollLeft = bottomScroll.scrollLeft;
+  }
+  
+  // 🧹 Limpia los resultados y el campo de búsqueda
+  function clearResultsAndInput() {
+    document.getElementById('searchInput').value = '';  // Limpia el input de búsqueda
+    clearResults();  // Limpia los resultados
+  }
+  
+  // 🔄 Mostrar u ocultar el botón de limpiar según el estado del input o la URL
+  function toggleClearButton() {
+    const searchInput = document.getElementById('searchInput');
+    const clearButton = document.getElementById('clearButton');
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasKeyword = urlParams.get('keyword');
+  
+    if (searchInput.value.trim() || hasKeyword) {
+      clearButton.style.display = 'inline-block';
+    } else {
+      clearButton.style.display = 'none';
+    }
+  }
+
+  async function getFiltersOptions() {
+    try {
+      const jsonData = await fetchSheetAsJson();
+  
+      // 🔎 Obtener valores únicos de la columna 3 (Materia)
+      const materiaOptions = [...new Set(
+        jsonData.table.map(row => row[3]).filter(Boolean)
+        .flatMap(value => value.split(',').map(item => item.trim()))
+      )];
+  
+      // 🔎 Obtener valores únicos de la columna 8 (Tipo)
+      const typeOptions = [...new Set(
+        jsonData.table.map(row => row[8]).filter(Boolean)
+        .flatMap(value => value.split(',').map(item => item.trim()))
+      )];
+  
+      // 🔎 Obtener valores únicos de la columna 9 (Grado)
+      const gradoOptions = [...new Set(
+        jsonData.table.map(row => row[9]).filter(Boolean)
+        .flatMap(value => value.split(',').map(item => item.trim()))
+      )];
+  
+      // 📝 Leer los parámetros de la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedMaterias = (urlParams.get('3') || '').split(',').map(item => item.trim().toLowerCase());
+      const selectedTipo = (urlParams.get('8') || '').toLowerCase();
+      const selectedGrados = (urlParams.get('9') || '').split(',').map(item => item.trim().toLowerCase());
+  
+      // 🎯 Generar checkboxes para Materia
+      const materiaFilterDiv = document.getElementById('materiaFilter');
+      materiaFilterDiv.innerHTML = ''; // 🔄 Limpiar antes de generar
+  
+      const segmentedWrapper = document.createElement('div');
+      segmentedWrapper.classList.add('segmented-control');
+  
+      materiaOptions.forEach(option => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'materiaFilter';
+        checkbox.value = option;
+        checkbox.id = `materia-${option}`;
+  
+        if (selectedMaterias.includes(option.toLowerCase())) {
+          checkbox.checked = true;
+        }
+  
+        const label = document.createElement('label');
+        label.htmlFor = `materia-${option}`;
+        label.textContent = option;
+  
+        segmentedWrapper.appendChild(checkbox);
+        segmentedWrapper.appendChild(label);
+      });
+  
+      materiaFilterDiv.appendChild(segmentedWrapper);
+  
+      // 🎯 Generar checkboxes para Grado
+      const gradoFilterDiv = document.getElementById('gradoFilter');
+      gradoFilterDiv.innerHTML = '';
+  
+      const gradoSegmentedWrapper = document.createElement('div');
+      gradoSegmentedWrapper.classList.add('segmented-control');
+  
+      gradoOptions.forEach(option => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'gradoFilter';
+        checkbox.value = option;
+        checkbox.id = `grado-${option}`;
+  
+        if (selectedGrados.includes(option.toLowerCase())) {
+          checkbox.checked = true;
+        }
+  
+        const label = document.createElement('label');
+        label.htmlFor = `grado-${option}`;
+        label.textContent = option;
+  
+        gradoSegmentedWrapper.appendChild(checkbox);
+        gradoSegmentedWrapper.appendChild(label);
+      });
+  
+      gradoFilterDiv.appendChild(gradoSegmentedWrapper);
+  
+      // 🎯 Generar dropdown para Tipo
+      const typeFilterDiv = document.getElementById('typeFilter');
+      typeFilterDiv.innerHTML = '';
+  
+      const dropdownWrapper = document.createElement('div');
+      dropdownWrapper.classList.add('dropdown');
+  
+      const typeSelect = document.createElement('select');
+      typeSelect.id = 'typeSelect';
+  
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'Todos los tipos';
+      typeSelect.appendChild(defaultOption);
+  
+      typeOptions.forEach(option => {
+        const selectOption = document.createElement('option');
+        selectOption.value = option;
+        selectOption.textContent = option;
+  
+        if (option.toLowerCase() === selectedTipo) {
+          selectOption.selected = true;
+        }
+  
+        typeSelect.appendChild(selectOption);
+      });
+  
+      dropdownWrapper.appendChild(typeSelect);
+      typeFilterDiv.appendChild(dropdownWrapper);
+  
+      // 🚀 **Asignar eventos de cambio después de generar los filtros**
+      assignFilterEvents();
+  
+    } catch (error) {
+      console.error('Error al generar los filtros:', error);
+    }
+  }
+
+  function assignFilterEvents() {
+    document.getElementById("searchInput").addEventListener("input", updateSearchDescription);
+    
+    document.querySelectorAll('input[name="materiaFilter"], input[name="gradoFilter"]').forEach(el => {
+      el.addEventListener("change", updateSearchDescription);
+    });
+  
+    document.getElementById("cicloSelect").addEventListener("change", updateSearchDescription);
+    document.getElementById("typeSelect").addEventListener("change", updateSearchDescription);
+  }
+
+  function generateSearchDescription(keyword, materias, grados, ciclo, tipo) {
+    let description = "BUSCAR TODOS LOS DOCUMENTOS";
+  
+    if (keyword && keyword !== "{{ALL}}") {
+      description = `BUSCAR TODOS LOS DOCUMENTOS CON "${keyword}"`;
+    }
+  
+    if (materias.length > 0) {
+      description += ` EN ${materias.join(", ")}`;
+    }
+  
+    if (grados.length > 0) {
+      description += ` PARA ${grados.join(", ")}`;
+    }
+  
+    if (ciclo && ciclo !== "Todos los ciclos") {
+      description += ` PARA ${ciclo} ciclo`;
+    }
+  
+    if (tipo && tipo !== "Todos los tipos") {
+      description += ` COMO ${tipo}`;
+    }
+  
+    return description;
+  }
+  
+  
+  function updateSearchDescription() {
+    const keyword = document.getElementById("searchInput").value.trim();
+    const materias = Array.from(document.querySelectorAll('input[name="materiaFilter"]:checked'))
+                          .map(checkbox => checkbox.value);
+    const grados = Array.from(document.querySelectorAll('input[name="gradoFilter"]:checked'))
+                        .map(checkbox => checkbox.value);
+    const ciclo = document.getElementById("cicloSelect")?.value.trim();
+    const tipo = document.getElementById("typeSelect")?.value.trim();
+  
+    document.getElementById("searchDescription").textContent = generateSearchDescription(keyword, materias, grados, ciclo, tipo);
+  }
+  
+  function loadSearchDescriptionFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let keyword = urlParams.get("keyword") || "";
+    const materias = (urlParams.get("3") || "").split(",").filter(Boolean);
+    const grados = (urlParams.get("9") || "").split(",").filter(Boolean);
+    const ciclo = urlParams.get("cicloSelect") || "";
+    const tipo = urlParams.get("8") || "";
+  
+    document.getElementById("searchDescription").textContent = generateSearchDescription(keyword, materias, grados, ciclo, tipo);
+  }
+  
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    loadSearchDescriptionFromURL(); // ✅ Cargar la descripción desde los parámetros de la URL
+  });
+
+  function generateResultsDescription(keyword, materias, grados, ciclo, tipo) {
+    let description = "RESULTADOS PARA TODOS LOS DOCUMENTOS";
+  
+    if (keyword && keyword !== "{{ALL}}") {
+      description = `RESULTADOS PARA TODOS LOS DOCUMENTOS CON "${keyword}"`;
+    }
+  
+    if (materias.length > 0) {
+      description += ` EN ${materias.join(", ")}`;
+    }
+  
+    if (grados.length > 0) {
+      description += ` PARA ${grados.join(", ")}`;
+    }
+  
+    if (ciclo && ciclo !== "Todos los ciclos") {
+      description += ` PARA ${ciclo} ciclo`;
+    }
+  
+    if (tipo && tipo !== "Todos los tipos") {
+      description += ` COMO ${tipo}`;
+    }
+  
+    return description;
+  }
+  
   

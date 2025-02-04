@@ -19,41 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-function clearResults() {
-  const resultsDiv = document.getElementById('results');
-  resultsDiv.innerHTML = '';  // Limpia el contenido previo
-}
-
-function syncScrollbars() {
-  const topScroll = document.querySelector('.scroll-top');
-  const bottomScroll = document.querySelector('.results');
-  if (!topScroll || !bottomScroll) return;
-
-  topScroll.onscroll = () => bottomScroll.scrollLeft = topScroll.scrollLeft;
-  bottomScroll.onscroll = () => topScroll.scrollLeft = bottomScroll.scrollLeft;
-}
-
-// 🧹 Limpia los resultados y el campo de búsqueda
-function clearResultsAndInput() {
-  document.getElementById('searchInput').value = '';  // Limpia el input de búsqueda
-  clearResults();  // Limpia los resultados
-}
-
-// 🔄 Mostrar u ocultar el botón de limpiar según el estado del input o la URL
-function toggleClearButton() {
-  const searchInput = document.getElementById('searchInput');
-  const clearButton = document.getElementById('clearButton');
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasKeyword = urlParams.get('keyword');
-
-  if (searchInput.value.trim() || hasKeyword) {
-    clearButton.style.display = 'inline-block';
-  } else {
-    clearButton.style.display = 'none';
-  }
-}
-
-
 // 🔗 Función para abrir el formulario en una nueva pestaña
 function openForm() {
   window.open(formUrl, '_blank');  // Abre el formulario en una nueva pestaña
