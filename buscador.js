@@ -289,6 +289,9 @@ async function getFiltersOptions() {
   
       // ✅ Actualizar el contenido de `resultsDescriptionContainer`
       if (filteredData.table.length > 0) {
+        const clearButton = document.getElementById("clearButton")
+        clearButton.style.display = "block";
+
         resultsDescriptionContainer.innerHTML = `<small>${generateResultsDescription(
           keyword,
           materiaSelected,
@@ -665,4 +668,32 @@ function clearResults() {
     return description;
   }
   
+  
+  document.getElementById("clearButton").addEventListener("click", function (event) {
+    event.preventDefault(); // Evita que el enlace haga una navegación
+  
+    // ✅ Limpiar la barra de búsqueda
+    document.getElementById("searchInput").value = "";
+  
+    // ✅ Desmarcar todos los checkboxes de filtros
+    document.querySelectorAll('input[name="materiaFilter"], input[name="gradoFilter"]').forEach(checkbox => {
+      checkbox.checked = false;
+    });
+  
+    // ✅ Resetear los selects (tipo y ciclo)
+    document.getElementById("cicloSelect").selectedIndex = 0;
+    document.getElementById("typeSelect").selectedIndex = 0;
+  
+    // ✅ Eliminar los parámetros de la URL sin recargar la página
+    history.pushState({}, '', window.location.pathname);
+  
+    // ✅ Restablecer la descripción de la búsqueda
+    document.getElementById("searchDescription").textContent = "BUSCAR TODOS LOS DOCUMENTOS";
+    document.getElementById("resultsDescriptionContainer").innerHTML = ""; // Ocultar el texto de resultados
+  
+    // ✅ Limpiar los resultados de búsqueda
+    document.getElementById("results").innerHTML = "";
+  
+    console.log("🔄 Búsqueda y filtros limpiados.");
+  });
   
