@@ -1,11 +1,8 @@
 
 
 const formUrl = 'https://forms.gle/qFUDpgGMCKNJygtd7';  
- 
 
 const discordLink ='https://discord.gg/QVfAYgUuFY';
-
-// const encryptedWebhook = btoa("https://discord.com/api/webhooks/1330562664245760051/5wrLTdDLncPo83bRCiCGo-kKIa7laxh40VB6isQqDemclZ_esxHBv2tRjCNEgtdEDSMA");
 
 const webhookProxy = 'https://lingering-thunder-7aaa.jacintadocentedb.workers.dev/'
 
