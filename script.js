@@ -104,7 +104,11 @@ function openModal(data) {
   // Guardar los datos originales en el campo oculto
   const dataField = document.getElementById("dataField");
   dataField.value = JSON.stringify(data);
+
+  // ✅ Generar CAPTCHA cada vez que se abre el modal
+  generateCaptcha();
 }
+
 
 document.getElementById("closeModalButton").addEventListener("click", () => {
   const modal = document.getElementById("modal");
@@ -129,9 +133,11 @@ document.getElementById('currentYear').textContent = new Date().getFullYear();
 
 function initializeForm() {
   function validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
+
+  generateCaptcha(); // ✅ Generar el CAPTCHA al inicializar el formulario
 
   document.getElementById("denunciaForm").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -143,7 +149,8 @@ function initializeForm() {
     const data = JSON.parse(document.getElementById("dataField").value); 
     let link = data[4];
 
-    const captcha = document.getElementById("captcha").value.trim();
+    const captchaInput = document.getElementById("captcha").value.trim().toLowerCase();
+    const captchaCorrecto = document.getElementById("captcha").dataset.respuesta.trim().toLowerCase();
 
     if (!email || !validateEmail(email)) {
       alert("Por favor, ingresa un correo electrónico válido.");
@@ -155,34 +162,12 @@ function initializeForm() {
       return;
     }
 
-    if (captcha !== "7") {
-      alert("Respuesta incorrecta en el CAPTCHA.");
+    if (captchaInput !== captchaCorrecto) {
+      alert("Respuesta incorrecta en el CAPTCHA. Inténtalo de nuevo.");
+      generateCaptcha(); // ✅ Generar una nueva pregunta si la respuesta es incorrecta
       return;
     }
 
-    const denuncias = JSON.parse(localStorage.getItem("denuncias")) || [];
-    const now = Date.now();
-    const denunciasValidas = denuncias.filter(d => now - d.timestamp < 7 * 24 * 60 * 60 * 1000);
-
-    if (denunciasValidas.some(d => d.motivo === motivo && d.detalles === detalles)) {
-      alert("Ya has enviado esta denuncia anteriormente.");
-      return;
-    }
-
-    if (denunciasValidas.some(d => d.link === link)) {
-      alert("Ya has denunciado ese link, estamos trabajando en ello.");
-      return;
-    }
-
-    if (denunciasValidas.length >= 5) {
-      alert("Has enviado más de 5 denuncias. Por favor, contáctanos directamente por correo.");
-      return;
-    }
-
-    denunciasValidas.push({ motivo, detalles, link, timestamp: now });
-    localStorage.setItem("denuncias", JSON.stringify(denunciasValidas));
-
-    // 🚀 Enviar la denuncia con el link corregido
     sendReport(nombre, email, motivo, detalles, link);
   });
 }
@@ -240,13 +225,14 @@ function generateCaptcha() {
     { pregunta: "¿Cuántas vocales tiene la palabra 'auto'?", respuesta: "3" }
   ];
 
-  // Seleccionar una pregunta al azar
   const captchaSeleccionado = preguntasCaptcha[Math.floor(Math.random() * preguntasCaptcha.length)];
+  const captchaLabel = document.getElementById("captchaLabel");
 
-  // Mostrar la pregunta en el formulario
-  document.getElementById("captchaLabel").textContent = captchaSeleccionado.pregunta;
-
-  // Guardar la respuesta correcta en el dataset del input
-  document.getElementById("captcha").dataset.respuesta = captchaSeleccionado.respuesta.toLowerCase();
+  if (captchaLabel) {
+    captchaLabel.textContent = captchaSeleccionado.pregunta; // ✅ Actualizar la pregunta en el label
+    document.getElementById("captcha").dataset.respuesta = captchaSeleccionado.respuesta.toLowerCase();
+  } else {
+    console.error("❌ No se encontró captchaLabel en el DOM.");
+  }
 }
 

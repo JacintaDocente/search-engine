@@ -184,7 +184,6 @@ async function getFiltersOptions() {
     }
   }
   
-  
   async function search() {
     let keyword = document.getElementById('searchInput').value.trim().toLowerCase();
     if (!keyword) {
@@ -239,7 +238,6 @@ async function getFiltersOptions() {
     const data = await fetchSheetAsJson();
     await performSearch(keyword, materiaSelected, tipoSelected, gradoSelected, data);
   }
-  
   
   async function performSearch(keyword, materiaSelected = [], tipoSelected = '', gradoSelected = []) {
     clearResults(); // Limpia los resultados anteriores
@@ -314,7 +312,7 @@ async function getFiltersOptions() {
       document.getElementById('results').innerHTML = '<p>Hubo un error al cargar los datos.</p>';
     }
   }
-  
+
   
   function transformJsonToTable(jsonData, columnsToIncludeInOrder) {
     const { table, tableInfo } = jsonData;
@@ -416,9 +414,6 @@ async function getFiltersOptions() {
       }
     });
   }
-  
-  
-
 
 function clearResults() {
     const resultsDiv = document.getElementById('results');
@@ -696,4 +691,32 @@ function clearResults() {
   
     console.log("🔄 Búsqueda y filtros limpiados.");
   });
+  
+  document.getElementById("cicloSelect").addEventListener("change", function () {
+    const cicloSeleccionado = this.value;
+    const gradoCheckboxes = document.querySelectorAll('input[name="gradoFilter"]');
+  
+    // Desmarcar todos los grados antes de seleccionar los correctos
+    gradoCheckboxes.forEach(checkbox => checkbox.checked = false);
+  
+    // Mapear ciclos a los grados correspondientes
+    if (cicloSeleccionado === "1er ciclo") {
+      marcarGrados(["1er", "2do", "3er"]);
+    } else if (cicloSeleccionado === "2do ciclo") {
+      marcarGrados(["4to", "5to", "6to", "7mo"]);
+    }
+  
+    updateSearchDescription(); // ✅ Actualizar el texto del buscador cuando cambien los grados seleccionados
+  });
+  
+  // ✅ Función para marcar los grados correctos
+  function marcarGrados(grados) {
+    const gradoCheckboxes = document.querySelectorAll('input[name="gradoFilter"]');
+  
+    gradoCheckboxes.forEach(checkbox => {
+      if (grados.includes(checkbox.value)) {
+        checkbox.checked = true;
+      }
+    });
+  }
   
