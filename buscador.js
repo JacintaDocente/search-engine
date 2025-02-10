@@ -619,31 +619,30 @@ function clearResults() {
     console.log("🔄 Búsqueda y filtros limpiados.");
   });
   
+   
   document.getElementById("cicloSelect").addEventListener("change", function () {
     const cicloSeleccionado = this.value;
     const gradoCheckboxes = document.querySelectorAll('input[name="gradoFilter"]');
-  
+
     // Desmarcar todos los grados antes de seleccionar los correctos
     gradoCheckboxes.forEach(checkbox => checkbox.checked = false);
-  
-    // Mapear ciclos a los grados correspondientes
-    if (cicloSeleccionado === "1er ciclo") {
-      marcarGrados(["1er", "2do", "3er"]);
-    } else if (cicloSeleccionado === "2do ciclo") {
-      marcarGrados(["4to", "5to", "6to", "7mo"]);
+
+    // Asignar grados correctos según el ciclo seleccionado
+    if (cicloSeleccionado === "1er") {
+        marcarGrados(["1ero", "2do", "3ero"]);
+    } else if (cicloSeleccionado === "2do") {
+        marcarGrados(["4to", "5to", "6to", "7mo"]);
     }
-  
-    updateSearchDescription(); // ✅ Actualizar el texto del buscador cuando cambien los grados seleccionados
-  });
-  
-  // ✅ Función para marcar los grados correctos
-  function marcarGrados(grados) {
+});
+
+// ✅ Función para marcar los grados correctos
+function marcarGrados(grados) {
     const gradoCheckboxes = document.querySelectorAll('input[name="gradoFilter"]');
-  
+
     gradoCheckboxes.forEach(checkbox => {
-      if (grados.includes(checkbox.value)) {
-        checkbox.checked = true;
-      }
+        if (grados.includes(checkbox.value)) {
+            checkbox.checked = true;
+        }
     });
-  }
-  
+}
+
