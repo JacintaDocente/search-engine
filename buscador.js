@@ -6,134 +6,61 @@ const columnsToInlcudeInOrder = [7,4,1,2,3,9,8,5,6,0];
 
 const searchableColumns = [1, 2, 3, 5, 6, 7, 8,9];
 
-
 async function getFiltersOptions() {
     try {
-      const jsonData = await fetchSheetAsJson();
-  
-      // 🔎 Obtener valores únicos de la columna 3 (Materia)
-      const materiaOptions = [...new Set(
-        jsonData.table
-          .map(row => row[3]) // Columna 3
-          .filter(Boolean)
-          .flatMap(value => value.split(',').map(item => item.trim())) // Separar por comas
-      )];
-  
-      // 🔎 Obtener valores únicos de la columna 8 (Tipo)
-      const typeOptions = [...new Set(
-        jsonData.table
-          .map(row => row[8]) // Columna 8
-          .filter(Boolean)
-          .flatMap(value => value.split(',').map(item => item.trim()))
-      )];
-  
-      // 🔎 Obtener valores únicos de la columna 9 (Grado)
-      const gradoOptions = [...new Set(
-        jsonData.table
-          .map(row => row[9]) // Columna 9
-          .filter(Boolean)
-          .flatMap(value => value.split(',').map(item => item.trim()))
-      )];
-  
-      // 📝 Leer los parámetros de la URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const selectedMaterias = (urlParams.get('3') || '').split(',').map(item => item.trim().toLowerCase());
-      const selectedTipo = (urlParams.get('8') || '').toLowerCase();
-      const selectedGrados = (urlParams.get('9') || '').split(',').map(item => item.trim().toLowerCase());
-  
-      // 🎯 Generar checkboxes para Materia con estilo segmented
-      const materiaFilterDiv = document.getElementById('materiaFilter');
-  
-      const segmentedWrapper = document.createElement('div');
-      segmentedWrapper.classList.add('segmented-control');
-  
-      materiaOptions.forEach(option => {
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = 'materiaFilter';
-        checkbox.value = option;
-        checkbox.id = `materia-${option}`;
-  
-        // ✅ Marcar como seleccionado si está en los parámetros de la URL
-        if (selectedMaterias.includes(option.toLowerCase())) {
-          checkbox.checked = true;
-        }
-  
-        const label = document.createElement('label');
-        label.htmlFor = `materia-${option}`;
-        label.textContent = option;
-  
-        segmentedWrapper.appendChild(checkbox);
-        segmentedWrapper.appendChild(label);
-      });
-  
-      materiaFilterDiv.appendChild(segmentedWrapper);
-  
-      // 🎯 Generar dropdown estilizado para Tipo
-      const typeFilterDiv = document.getElementById('typeFilter');
-      typeFilterDiv.innerHTML = '';
-  
-      const dropdownWrapper = document.createElement('div');
-      dropdownWrapper.classList.add('dropdown');
-  
-      const typeSelect = document.createElement('select');
-      typeSelect.id = 'typeSelect';
-  
-      // Opción por defecto
-      const defaultOption = document.createElement('option');
-      defaultOption.value = '';
-      defaultOption.textContent = 'Todos los tipos';
-      typeSelect.appendChild(defaultOption);
-  
-      // Opciones dinámicas
-      typeOptions.forEach(option => {
-        const selectOption = document.createElement('option');
-        selectOption.value = option;
-        selectOption.textContent = option;
-  
-        // ✅ Marcar como seleccionado si está en los parámetros de la URL
-        if (option.toLowerCase() === selectedTipo) {
-          selectOption.selected = true;
-        }
-  
-        typeSelect.appendChild(selectOption);
-      });
-  
-      dropdownWrapper.appendChild(typeSelect);
-      typeFilterDiv.appendChild(dropdownWrapper);
-  
-      // 🎯 Generar checkboxes para Grado con estilo segmented
-      const gradoFilterDiv = document.getElementById('gradoFilter');
-  
-      const gradoSegmentedWrapper = document.createElement('div');
-      gradoSegmentedWrapper.classList.add('segmented-control');
-  
-      gradoOptions.forEach(option => {
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = 'gradoFilter';
-        checkbox.value = option;
-        checkbox.id = `grado-${option}`;
-  
-        // ✅ Marcar como seleccionado si está en los parámetros de la URL
-        if (selectedGrados.includes(option.toLowerCase())) {
-          checkbox.checked = true;
-        }
-  
-        const label = document.createElement('label');
-        label.htmlFor = `grado-${option}`;
-        label.textContent = option;
-  
-        gradoSegmentedWrapper.appendChild(checkbox);
-        gradoSegmentedWrapper.appendChild(label);
-      });
-  
-      gradoFilterDiv.appendChild(gradoSegmentedWrapper);
-  
+        const jsonData = await fetchSheetAsJson();
+
+        // 🔎 Obtener valores únicos de la columna 9 (Grado)
+        let gradoOptions = [...new Set(
+            jsonData.table
+                .map(row => row[9]) // Columna 9
+                .filter(Boolean)
+                .flatMap(value => value.split(',').map(item => item.trim()))
+        )];
+        
+
+        // 🔀 Ordenar alfabéticamente (funcionará correctamente con "1ero", "2do", "3ero", etc.)
+        gradoOptions.sort();
+
+        // 📝 Leer los parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedGrados = (urlParams.get('9') || '').split(',').map(item => item.trim().toLowerCase());
+
+        // 🎯 Generar checkboxes para Grado con estilo segmented
+        const gradoFilterDiv = document.getElementById('gradoFilter');
+        gradoFilterDiv.innerHTML = ''; // Limpia el contenedor antes de agregar elementos nuevos
+
+        const gradoSegmentedWrapper = document.createElement('div');
+        gradoSegmentedWrapper.classList.add('segmented-control');
+
+        gradoOptions.forEach(option => {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'gradoFilter';
+            checkbox.value = option;
+            checkbox.id = `grado-${option}`;
+
+            // ✅ Marcar como seleccionado si está en los parámetros de la URL
+            if (selectedGrados.includes(option.toLowerCase())) {
+                checkbox.checked = true;
+            }
+
+            const label = document.createElement('label');
+            label.htmlFor = `grado-${option}`;
+            label.textContent = option;
+
+            gradoSegmentedWrapper.appendChild(checkbox);
+            gradoSegmentedWrapper.appendChild(label);
+        });
+
+        gradoFilterDiv.appendChild(gradoSegmentedWrapper);
+
     } catch (error) {
-      console.error('Error al generar los filtros:', error);
+        console.error('Error al generar los filtros:', error);
     }
-  }
+}
+
+
   
   // Función principal para obtener y convertir los datos
   async function fetchSheetAsJson() {
@@ -290,15 +217,15 @@ async function getFiltersOptions() {
         const clearButton = document.getElementById("clearButton")
         clearButton.style.display = "block";
 
-        resultsDescriptionContainer.innerHTML = `<small>${generateResultsDescription(
+        resultsDescriptionContainer.innerHTML = `<p>${generateResultsDescription(
           keyword,
           materiaSelected,
           gradoSelected,
           document.getElementById("cicloSelect")?.value.trim(),
           tipoSelected
-        )}</small>`;
+        )}</p>`;
       } else {
-        resultsDescriptionContainer.innerHTML = `<small>No hay resultados para tu búsqueda.</small>`; // ✅ Mostrar mensaje si no hay resultados
+        resultsDescriptionContainer.innerHTML = `<p>No hay resultados para tu búsqueda.</p>`; // ✅ Mostrar mensaje si no hay resultados
       }
   
       // ✅ Mostrar la tabla si hay resultados
@@ -457,19 +384,19 @@ function clearResults() {
       const materiaOptions = [...new Set(
         jsonData.table.map(row => row[3]).filter(Boolean)
         .flatMap(value => value.split(',').map(item => item.trim()))
-      )];
+      )].sort();
   
       // 🔎 Obtener valores únicos de la columna 8 (Tipo)
       const typeOptions = [...new Set(
         jsonData.table.map(row => row[8]).filter(Boolean)
         .flatMap(value => value.split(',').map(item => item.trim()))
-      )];
+      )].sort();
   
       // 🔎 Obtener valores únicos de la columna 9 (Grado)
       const gradoOptions = [...new Set(
         jsonData.table.map(row => row[9]).filter(Boolean)
         .flatMap(value => value.split(',').map(item => item.trim()))
-      )];
+    )].sort();
   
       // 📝 Leer los parámetros de la URL
       const urlParams = new URLSearchParams(window.location.search);

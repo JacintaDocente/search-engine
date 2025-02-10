@@ -176,6 +176,9 @@ h2 {
     display:none;
     opacity: 0.5;
 }
+#clearButton span {
+  vertical-align: middle;
+}
 
 #shareButton {
     display:none;
@@ -224,7 +227,7 @@ h2 {
 }
 
 .actions.search a {
-  background-color: gainsboro;
+  background-color: slategrey;
   font-size: 24px;
   margin-bottom:20px;
   padding: 10px 14px;
@@ -412,6 +415,11 @@ small {
     font-size:10px;
 }
 
+#resultsDescriptionContainer {
+  background-color:#f2f2f2;
+  padding: 10px 0;
+}
+
 footer {
     padding: 10px;
     background-color: gainsboro;
@@ -580,6 +588,7 @@ h4 {
   justify-content: center;
   align-items: center;
   gap: 10px;
+  margin: -10px;
 }
 
 #searchDescription {
