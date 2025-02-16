@@ -242,9 +242,17 @@ document.getElementById("suggestionForm").addEventListener("submit", async funct
 
   const email = document.getElementById("suggestionEmail").value.trim();
   const suggestion = document.getElementById("suggestionText").value.trim();
+  const captchaInput = document.getElementById("captcha").value.trim().toLowerCase();
+  const captchaCorrecto = document.getElementById("captcha").dataset.respuesta.trim().toLowerCase();
 
   if (!suggestion) {
     alert("Por favor, ingresa una sugerencia.");
+    return;
+  }
+
+  if (captchaInput !== captchaCorrecto) {
+    alert("Respuesta incorrecta en el CAPTCHA. Inténtalo de nuevo.");
+    generateCaptcha(); // Generar una nueva pregunta si la respuesta es incorrecta
     return;
   }
 
@@ -274,7 +282,7 @@ document.getElementById("suggestionForm").addEventListener("submit", async funct
     if (response.ok) {
       alert("Sugerencia enviada con éxito.");
       document.getElementById("suggestionForm").reset();
-      document.getElementById("suggestionModal").classList.remove("active");
+      generateCaptcha(); // Generar un nuevo CAPTCHA después de enviar correctamente
     } else {
       alert("Error al enviar la sugerencia. Código de estado: " + response.status);
     }
@@ -283,4 +291,7 @@ document.getElementById("suggestionForm").addEventListener("submit", async funct
     alert("Ocurrió un error inesperado. Inténtalo nuevamente.");
   }
 });
+
+// Generar el CAPTCHA al cargar la página
+document.addEventListener("DOMContentLoaded", generateCaptcha);
 
