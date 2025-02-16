@@ -143,6 +143,29 @@
     </section>
  </div>
 
+ <div class="block-container  bg-darkseagreen">
+  <div id="suggestionModal" class="half-block">
+      <h2>Enviar una Sugerencia</h2>
+      <p>Ayudanos a mejorar: compartí tu sugerencia o solicitá el material que necesitás.</p>
+      <form id="suggestionForm">
+        <div class="form-field">
+          <label for="suggestionEmail">Tu correo (opcional):</label>
+          <input type="email" id="suggestionEmail" name="email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-field">
+          <label for="suggestionText">Tu sugerencia:</label>
+          <textarea id="suggestionText" name="suggestion" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="button">Enviar</button>
+      </form>
+  </div>
+  <div class="half-block bg-suggestions">
+  </div>
+ </div>
+
+ <!-- Formulario de Sugerencias -->
+
+
 <!-- Modal oculto -->
 <div class="modal" id="modal">
   <div class="modal-content">

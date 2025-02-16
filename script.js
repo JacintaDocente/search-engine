@@ -236,3 +236,51 @@ function generateCaptcha() {
   }
 }
 
+
+document.getElementById("suggestionForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const email = document.getElementById("suggestionEmail").value.trim();
+  const suggestion = document.getElementById("suggestionText").value.trim();
+
+  if (!suggestion) {
+    alert("Por favor, ingresa una sugerencia.");
+    return;
+  }
+
+  const payload = {
+    content: "📩 **Nueva sugerencia recibida**",
+    embeds: [
+      {
+        title: "Sugerencia",
+        fields: [
+          { name: "📧 Correo", value: email || "Anónimo", inline: true },
+          { name: "💡 Sugerencia", value: suggestion, inline: false }
+        ],
+        color: 3447003
+      }
+    ]
+  };
+
+  const webhookURL = "https://black-king-ae02.jacintadocentedb.workers.dev/";
+
+  try {
+    const response = await fetch(webhookURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      alert("Sugerencia enviada con éxito.");
+      document.getElementById("suggestionForm").reset();
+      document.getElementById("suggestionModal").classList.remove("active");
+    } else {
+      alert("Error al enviar la sugerencia. Código de estado: " + response.status);
+    }
+  } catch (error) {
+    console.error("Error al enviar la sugerencia:", error);
+    alert("Ocurrió un error inesperado. Inténtalo nuevamente.");
+  }
+});
+
